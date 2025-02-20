@@ -31,12 +31,13 @@ Laravel is accessible, powerful, and provides tools required for large, robust a
 
 1. Clone this repository
 2. Run `composer install`
-3. Create a new database
-4. Copy the `.env.example` file to `.env` and fill in the database information
-5. Run `php artisan key:generate`
-6. Run `php artisan migrate`
-7. Run `php artisan db:seed`
-8. Run `php artisan serve`
+3. Run `npm install`, then `npm run build`
+4. Create a new database
+5. Copy the `.env.example` file to `.env` and fill in the database information
+6. Run `php artisan key:generate`
+7. Run `php artisan migrate`
+8. Run `php artisan db:seed`
+9. Run `php artisan serve`
 
 ## License
 
