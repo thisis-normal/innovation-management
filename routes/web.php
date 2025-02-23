@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TestController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -16,5 +17,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+//make a get route test to TestController
+Route::get('/test-grading', [TestController::class, 'testGrading']);
+Route::get('/test-delete-grading', [TestController::class, 'testDeleteGrading']);
 
 require __DIR__.'/auth.php';
