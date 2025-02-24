@@ -10,7 +10,8 @@
         "filament/filament": "^3.2",
         "laravel/breeze": "^2.3",
         "laravel/framework": "^11.31",
-        "laravel/tinker": "^2.9"
+        "laravel/tinker": "^2.9",
+        "ext-zip": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

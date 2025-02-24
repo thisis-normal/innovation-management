@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class TrangThaiSangKien extends Model
 {
@@ -25,8 +26,8 @@ class TrangThaiSangKien extends Model
         'is_active' => 'tinyint(1)'
     ];
 
-    public function sangKiens()
+    public function sangKien(): HasMany
     {
-        return $this->hasMany(SangKien::class, 'ma_trang_thai_sang_kien');
+        return $this->hasMany(SangKien::class, 'ma_trang_thai_sang_kien', 'id');
     }
 }
