@@ -185,8 +185,8 @@ class SangKienResource extends Resource
                         return $record->trangThaiSangKien->ma_trang_thai == 'draft';
                     })
                     ->action(function ($record) {
-                        //get id from trang_thai_sang_kien table where ma_trang_thai = 'Pending'
-                        $trangThaiId = TrangThaiSangKien::query()->where('ma_trang_thai', 'Pending')->first()->id;
+                        //get id from trang_thai_sang_kien table where ma_trang_thai = 'pending_manager'
+                        $trangThaiId = TrangThaiSangKien::query()->where('ma_trang_thai', 'pending_manager')->first()->id;
                         //update ma_trang_thai_sang_kien in sang_kien table
                         $record->update(['ma_trang_thai_sang_kien' => $trangThaiId]);
                         Notification::make()
