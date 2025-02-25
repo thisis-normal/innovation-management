@@ -11,8 +11,18 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\Filter;
+use Filament\Forms\Components\Select;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Models\TrangThaiSangKien;
+use App\Models\DonVi;
+use Filament\Forms\Components\RichEditor;
+use Filament\Tables\Filters\Indicator;
+use Illuminate\Support\Collection;
 
 class BaoCaoResource extends Resource
 {
@@ -36,19 +46,186 @@ class BaoCaoResource extends Resource
     {
         return $table
             ->columns([
-                //
+                Tables\Columns\TextColumn::make('ten_sang_kien')
+                    ->label('Tên Sáng Kiến')
+                    ->searchable()
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('mo_ta')
+                    ->label('Mô Tả')
+                    ->limit(50)
+                    ->searchable(),
+
+                Tables\Columns\TextColumn::make('user.name')
+                    ->label('Tác Giả')
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('donVi.ten_don_vi')
+                    ->label('Đơn Vị')
+                    ->sortable()
+                    ->searchable(),
+
+                Tables\Columns\TextColumn::make('trangThaiSangKien.ten_trang_thai')
+                    ->label('Trạng Thái')
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('ket_qua')
+                    ->label('Xếp Loại')
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Ngày Tạo')
+                    ->dateTime('d/m/Y')
+                    ->sortable(),
             ])
             ->filters([
-                //
+                SelectFilter::make('ma_trang_thai_sang_kien')
+                    ->label('Trạng Thái')
+                    ->relationship('trangThaiSangKien', 'ten_trang_thai')
+                    ->searchable()
+                    ->preload()
+                    ->multiple()
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query;
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        if (!$data['values'] || count($data['values']) === 0) {
+                            return [];
+                        }
+
+                        return Collection::wrap($data['values'])
+                            ->map(function (string $value): Indicator {
+                                $trangThai = TrangThaiSangKien::find($value);
+                                $label = $trangThai ? $trangThai->ten_trang_thai : $value;
+
+                                return Indicator::make("Trạng thái: {$label}");
+                            })
+                            ->all();
+                    }),
+
+                SelectFilter::make('ma_don_vi')
+                    ->label('Đơn Vị')
+                    ->relationship('donVi', 'ten_don_vi')
+                    ->searchable()
+                    ->preload()
+                    ->multiple()
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query;
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        if (!$data['values'] || count($data['values']) === 0) {
+                            return [];
+                        }
+
+                        return Collection::wrap($data['values'])
+                            ->map(function (string $value): Indicator {
+                                $donVi = DonVi::find($value);
+                                $label = $donVi ? $donVi->ten_don_vi : $value;
+
+                                return Indicator::make("Đơn vị: {$label}");
+                            })
+                            ->all();
+                    }),
+
+                SelectFilter::make('ket_qua')
+                    ->label('Xếp Loại')
+                    ->options([
+                        'A' => 'Loại A',
+                        'B' => 'Loại B',
+                        'C' => 'Loại C',
+                    ])
+                    ->multiple()
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query;
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        if (!$data['values'] || count($data['values']) === 0) {
+                            return [];
+                        }
+
+                        $options = [
+                            'A' => 'Loại A',
+                            'B' => 'Loại B',
+                            'C' => 'Loại C',
+                        ];
+
+                        return Collection::wrap($data['values'])
+                            ->map(function (string $value) use ($options): Indicator {
+                                $label = $options[$value] ?? $value;
+
+                                return Indicator::make("Xếp loại: {$label}");
+                            })
+                            ->all();
+                    }),
+
+                Filter::make('created_at')
+                    ->form([
+                        Forms\Components\DatePicker::make('from')
+                            ->label('Từ ngày'),
+                        Forms\Components\DatePicker::make('until')
+                            ->label('Đến ngày'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query;
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+
+                        if ($data['from'] ?? null) {
+                            $indicators[] = Indicator::make('Từ ngày: ' . Carbon::parse($data['from'])->format('d/m/Y'));
+                        }
+
+                        if ($data['until'] ?? null) {
+                            $indicators[] = Indicator::make('Đến ngày: ' . Carbon::parse($data['until'])->format('d/m/Y'));
+                        }
+
+                        return $indicators;
+                    }),
             ])
+            ->filtersFormWidth('md')
+            ->filtersLayout(Tables\Enums\FiltersLayout::Modal)
+            ->filtersTriggerAction(
+                fn (Tables\Actions\Action $action) => $action
+                    ->button()
+                    ->label('Lọc dữ liệu')
+            )
+            ->filtersApplyAction(
+                fn (Tables\Actions\Action $action) => $action
+                    ->label('Áp dụng')
+                    ->button()
+                    ->color('primary')
+            )
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ViewAction::make()
+                    ->label('Xem chi tiết')
+                    ->form([
+                        Forms\Components\TextInput::make('ten_sang_kien')
+                            ->label('Tên sáng kiến')
+                            ->disabled(),
+                        Forms\Components\RichEditor::make('hien_trang')
+                            ->label('Hiện trạng')
+                            ->disabled(),
+                        Forms\Components\RichEditor::make('mo_ta')
+                            ->label('Mô tả')
+                            ->disabled(),
+                        Forms\Components\RichEditor::make('ket_qua')
+                            ->label('Kết quả')
+                            ->disabled(),
+                        Forms\Components\TextInput::make('user.name')
+                            ->label('Tác giả')
+                            ->disabled(),
+                        Forms\Components\TextInput::make('donVi.ten_don_vi')
+                            ->label('Đơn vị')
+                            ->disabled(),
+                        Forms\Components\TextInput::make('trangThaiSangKien.ten_trang_thai')
+                            ->label('Trạng thái')
+                            ->disabled(),
+                    ])
+                    ->modalHeading('Chi tiết sáng kiến')
+                    ->modalWidth('5xl'),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ]);
+            ->defaultSort('created_at', 'desc')
+            ->persistFiltersInSession();
     }
 
     public static function getRelations(): array
@@ -65,5 +242,39 @@ class BaoCaoResource extends Resource
             'create' => Pages\CreateBaoCao::route('/create'),
             'edit' => Pages\EditBaoCao::route('/{record}/edit'),
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        // Xử lý lọc được chọn trước khi áp dụng
+        $request = request();
+
+        // Xử lý lọc trạng thái
+        if ($request->filled('tableFilters.ma_trang_thai_sang_kien.values') && is_array($request->input('tableFilters.ma_trang_thai_sang_kien.values'))) {
+            $query->whereIn('ma_trang_thai_sang_kien', $request->input('tableFilters.ma_trang_thai_sang_kien.values'));
+        }
+
+        // Xử lý lọc đơn vị
+        if ($request->filled('tableFilters.ma_don_vi.values') && is_array($request->input('tableFilters.ma_don_vi.values'))) {
+            $query->whereIn('ma_don_vi', $request->input('tableFilters.ma_don_vi.values'));
+        }
+
+        // Xử lý lọc xếp loại
+        if ($request->filled('tableFilters.ket_qua.values') && is_array($request->input('tableFilters.ket_qua.values'))) {
+            $query->whereIn('ket_qua', $request->input('tableFilters.ket_qua.values'));
+        }
+
+        // Xử lý lọc ngày tạo
+        if ($request->filled('tableFilters.created_at.from')) {
+            $query->whereDate('created_at', '>=', $request->input('tableFilters.created_at.from'));
+        }
+
+        if ($request->filled('tableFilters.created_at.until')) {
+            $query->whereDate('created_at', '<=', $request->input('tableFilters.created_at.until'));
+        }
+
+        return $query;
     }
 }
