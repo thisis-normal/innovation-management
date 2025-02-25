@@ -250,29 +250,31 @@ class BaoCaoResource extends Resource
 
         // Xử lý lọc được chọn trước khi áp dụng
         $request = request();
+        $filters = $request->get('tableFilters', []);
 
         // Xử lý lọc trạng thái
-        if ($request->filled('tableFilters.ma_trang_thai_sang_kien.values') && is_array($request->input('tableFilters.ma_trang_thai_sang_kien.values'))) {
-            $query->whereIn('ma_trang_thai_sang_kien', $request->input('tableFilters.ma_trang_thai_sang_kien.values'));
+        if (!empty($filters['ma_trang_thai_sang_kien']['values'])) {
+            $query->whereIn('ma_trang_thai_sang_kien', $filters['ma_trang_thai_sang_kien']['values']);
         }
 
         // Xử lý lọc đơn vị
-        if ($request->filled('tableFilters.ma_don_vi.values') && is_array($request->input('tableFilters.ma_don_vi.values'))) {
-            $query->whereIn('ma_don_vi', $request->input('tableFilters.ma_don_vi.values'));
+        if (!empty($filters['ma_don_vi']['values'])) {
+            $query->whereIn('ma_don_vi', $filters['ma_don_vi']['values']);
         }
 
         // Xử lý lọc xếp loại
-        if ($request->filled('tableFilters.ket_qua.values') && is_array($request->input('tableFilters.ket_qua.values'))) {
-            $query->whereIn('ket_qua', $request->input('tableFilters.ket_qua.values'));
+        if (!empty($filters['ket_qua']['values'])) {
+            $query->whereIn('ket_qua', $filters['ket_qua']['values']);
         }
 
         // Xử lý lọc ngày tạo
-        if ($request->filled('tableFilters.created_at.from')) {
-            $query->whereDate('created_at', '>=', $request->input('tableFilters.created_at.from'));
-        }
-
-        if ($request->filled('tableFilters.created_at.until')) {
-            $query->whereDate('created_at', '<=', $request->input('tableFilters.created_at.until'));
+        if (!empty($filters['created_at'])) {
+            if (!empty($filters['created_at']['from'])) {
+                $query->whereDate('created_at', '>=', $filters['created_at']['from']);
+            }
+            if (!empty($filters['created_at']['until'])) {
+                $query->whereDate('created_at', '<=', $filters['created_at']['until']);
+            }
         }
 
         return $query;
