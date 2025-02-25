@@ -10,6 +10,8 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\Action;
+use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -46,34 +48,34 @@ class BaoCaoResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('ten_sang_kien')
+                TextColumn::make('ten_sang_kien')
                     ->label('Tên Sáng Kiến')
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('mo_ta')
+                TextColumn::make('mo_ta')
                     ->label('Mô Tả')
                     ->limit(50)
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('user.name')
+                TextColumn::make('user.name')
                     ->label('Tác Giả')
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('donVi.ten_don_vi')
+                TextColumn::make('donVi.ten_don_vi')
                     ->label('Đơn Vị')
                     ->sortable()
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('trangThaiSangKien.ten_trang_thai')
+                TextColumn::make('trangThaiSangKien.ten_trang_thai')
                     ->label('Trạng Thái')
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('ket_qua')
+                TextColumn::make('ket_qua')
                     ->label('Xếp Loại')
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->label('Ngày Tạo')
                     ->dateTime('d/m/Y')
                     ->sortable(),
@@ -181,20 +183,16 @@ class BaoCaoResource extends Resource
 
                         return $indicators;
                     }),
-            ])
-            ->filtersFormWidth('md')
-            ->filtersLayout(Tables\Enums\FiltersLayout::Modal)
-            ->filtersTriggerAction(
-                fn (Tables\Actions\Action $action) => $action
-                    ->button()
-                    ->label('Lọc dữ liệu')
-            )
+            ], layout: FiltersLayout::AboveContent)
+            ->filtersFormWidth('2xl')
+            ->filtersFormColumns(3)
             ->filtersApplyAction(
-                fn (Tables\Actions\Action $action) => $action
-                    ->label('Áp dụng')
+                fn (Action $action) => $action
                     ->button()
-                    ->color('primary')
+                    ->label('Tìm kiếm'),
             )
+            ->deferFilters()
+            ->deselectAllRecordsWhenFiltered(false)
             ->actions([
                 Tables\Actions\ViewAction::make()
                     ->label('Xem chi tiết')
@@ -224,8 +222,7 @@ class BaoCaoResource extends Resource
                     ->modalHeading('Chi tiết sáng kiến')
                     ->modalWidth('5xl'),
             ])
-            ->defaultSort('created_at', 'desc')
-            ->persistFiltersInSession();
+            ->defaultSort('created_at', 'desc');
     }
 
     public static function getRelations(): array
