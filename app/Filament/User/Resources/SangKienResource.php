@@ -31,8 +31,10 @@ class SangKienResource extends Resource
     protected static ?string $navigationLabel = 'Sáng Kiến'; // Custom label in sidebar
     protected static ?string $pluralModelLabel = 'Sáng Kiến'; // Used for breadcrumbs
     protected static ?string $modelLabel = 'Sáng Kiến'; // Used in forms & buttons
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-light-bulb';
     protected static ?string $slug = 'sang-kien';
+    protected static ?int $navigationSort = 1;
+
     public static function form(Form $form): Form
     {
         return $form
