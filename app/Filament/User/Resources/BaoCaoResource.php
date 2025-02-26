@@ -88,6 +88,9 @@ class BaoCaoResource extends Resource
                     ->preload()
                     ->multiple()
                     ->query(function (Builder $query, array $data): Builder {
+                        if (!empty($data['values'])) {
+                            $query->whereIn('ma_trang_thai_sang_kien', $data['values']);
+                        }
                         return $query;
                     })
                     ->indicateUsing(function (array $data): array {
@@ -112,6 +115,9 @@ class BaoCaoResource extends Resource
                     ->preload()
                     ->multiple()
                     ->query(function (Builder $query, array $data): Builder {
+                        if (!empty($data['values'])) {
+                            $query->whereIn('ma_don_vi', $data['values']);
+                        }
                         return $query;
                     })
                     ->indicateUsing(function (array $data): array {
@@ -138,6 +144,9 @@ class BaoCaoResource extends Resource
                     ])
                     ->multiple()
                     ->query(function (Builder $query, array $data): Builder {
+                        if (!empty($data['values'])) {
+                            $query->whereIn('ket_qua', $data['values']);
+                        }
                         return $query;
                     })
                     ->indicateUsing(function (array $data): array {
@@ -168,6 +177,12 @@ class BaoCaoResource extends Resource
                             ->label('Đến ngày'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
+                        if (!empty($data['from'])) {
+                            $query->whereDate('created_at', '>=', $data['from']);
+                        }
+                        if (!empty($data['until'])) {
+                            $query->whereDate('created_at', '<=', $data['until']);
+                        }
                         return $query;
                     })
                     ->indicateUsing(function (array $data): array {
@@ -193,6 +208,7 @@ class BaoCaoResource extends Resource
             )
             ->deferFilters()
             ->deselectAllRecordsWhenFiltered(false)
+            ->emptyStateHeading('Không tìm thấy báo cáo liên quan')
             ->actions([
                 Tables\Actions\ViewAction::make()
                     ->label('Xem chi tiết')
@@ -243,37 +259,6 @@ class BaoCaoResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        $query = parent::getEloquentQuery();
-
-        // Xử lý lọc được chọn trước khi áp dụng
-        $request = request();
-        $filters = $request->get('tableFilters', []);
-
-        // Xử lý lọc trạng thái
-        if (!empty($filters['ma_trang_thai_sang_kien']['values'])) {
-            $query->whereIn('ma_trang_thai_sang_kien', $filters['ma_trang_thai_sang_kien']['values']);
-        }
-
-        // Xử lý lọc đơn vị
-        if (!empty($filters['ma_don_vi']['values'])) {
-            $query->whereIn('ma_don_vi', $filters['ma_don_vi']['values']);
-        }
-
-        // Xử lý lọc xếp loại
-        if (!empty($filters['ket_qua']['values'])) {
-            $query->whereIn('ket_qua', $filters['ket_qua']['values']);
-        }
-
-        // Xử lý lọc ngày tạo
-        if (!empty($filters['created_at'])) {
-            if (!empty($filters['created_at']['from'])) {
-                $query->whereDate('created_at', '>=', $filters['created_at']['from']);
-            }
-            if (!empty($filters['created_at']['until'])) {
-                $query->whereDate('created_at', '<=', $filters['created_at']['until']);
-            }
-        }
-
-        return $query;
+        return parent::getEloquentQuery();
     }
 }
