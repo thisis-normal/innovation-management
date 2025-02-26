@@ -18,6 +18,10 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+//make a get route test to TestController
+// Route::get('/test-grading', [TestController::class, 'testGrading']);
+// Route::get('/test-delete-grading', [TestController::class, 'testDeleteGrading']);
+// Route::get('/test-sth', [TestController::class, 'testSomething']);
 Route::get('/search', [SearchController::class, 'index'])->name('search');
 
 require __DIR__.'/auth.php';

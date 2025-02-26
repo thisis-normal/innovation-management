@@ -3,7 +3,6 @@
 namespace App\Filament\User\Resources;
 
 use App\Filament\User\Resources\SangKienResource\Pages;
-use App\Filament\User\Resources\SangKienResource\RelationManagers;
 use App\Models\SangKien;
 use App\Models\TaiLieuSangKien;
 use App\Models\TrangThaiSangKien;
@@ -121,7 +120,7 @@ class SangKienResource extends Resource
                     ->badge()
                     ->color(fn ($record) => match ($record->trangThaiSangKien->ma_trang_thai) {
                         'draft' => 'gray', // Neutral gray for drafts
-                        'Pending' => 'amber', // Amber (yellow-orange) for pending actions
+                        'pending_manager', 'pending_secretary' => 'amber', // Amber (yellow-orange) for pending actions
                         'Checking' => 'calm-blue', // Calm blue for checking
                         'Reviewing' => 'indigo', // Indigo for reviewing
                         'Scoring1' => 'lime', // Bright lime green for initial scoring
@@ -129,6 +128,8 @@ class SangKienResource extends Resource
                         'Approved' => 'green', // Vibrant green for approved items
                         default => 'red', // Bold red for rejected or unknown states
                     }),
+                TextColumn::make('ghi_chu')->label('Ghi chú')
+                    ->limit(50)
             ])
             ->filters([
                 Filter::make('Search')
