@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\GradingSession;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 
 class TestController extends Controller
 {
@@ -62,5 +63,12 @@ class TestController extends Controller
         } catch (\Exception $e) {
             return response()->json(['message' => 'Failed to delete grading session']);
         }
+    }
+    public function testSomething()
+    {
+        $user = Auth::user();
+        $user = Auth::user();
+        $roles = $user->roles->pluck('ma_vai_tro')->toArray();
+        dd($roles);
     }
 }

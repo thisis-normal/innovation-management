@@ -9,6 +9,7 @@ use Filament\Resources\Pages\ListRecords;
 class ListSangKiens extends ListRecords
 {
     protected static string $resource = SangKienResource::class;
+    protected static ?string $breadcrumb = 'Danh sách sáng kiến';
 
     protected function getHeaderActions(): array
     {

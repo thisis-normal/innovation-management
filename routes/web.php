@@ -21,5 +21,6 @@ Route::middleware('auth')->group(function () {
 //make a get route test to TestController
 Route::get('/test-grading', [TestController::class, 'testGrading']);
 Route::get('/test-delete-grading', [TestController::class, 'testDeleteGrading']);
+Route::get('/test-sth', [TestController::class, 'testSomething']);
 
 require __DIR__.'/auth.php';

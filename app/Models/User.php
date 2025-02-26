@@ -2,17 +2,20 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Exception;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+/**
+ * @property Collection|VaiTro[] $roles
+ */
 class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<UserFactory> */
@@ -93,8 +96,16 @@ class User extends Authenticatable implements FilamentUser
     {
         return $this->belongsToMany(VaiTro::class, 'lnk_nguoi_dung_vai_tro', 'nguoi_dung_id', 'vai_tro_id');
     }
-    public function hasRole(string $role): bool
+    public function hasRole($roles): bool
     {
-        return $this->roles()->where('ten_vai_tro', $role)->exists();
+        if (is_string($roles)) {
+            return $this->roles()->where('ma_vai_tro', $roles)->exists();
+        }
+
+        if (is_array($roles)) {
+            return $this->roles()->whereIn('ma_vai_tro', $roles)->exists();
+        }
+
+        return false; // Return false for invalid input
     }
 }
