@@ -6,17 +6,21 @@ use App\Models\SangKien;
 use Filament\Actions\Exports\Exporter;
 use Filament\Actions\Exports\Models\Export;
 use Filament\Actions\Exports\ExportColumn;
-use Filament\Forms;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Support\Facades\Log;
 
 class SangKienExporter extends Exporter
 {
     protected static ?string $model = SangKien::class;
 
-    // Sử dụng fileNamePrefix theo tài liệu chính thức
-    protected static function fileNamePrefix(): string
+    public function getFileName(Export $export): string
     {
-        return 'bao-cao-sang-kien';
+        try {
+            return "sang_kien-{$export->getKey()}.xlsx";
+        } catch (\Exception $e) {
+            Log::error('Export filename error: ' . $e->getMessage());
+            return 'sang_kien-export.xlsx';
+        }
     }
 
     // Sửa phương thức này để sử dụng ExportColumn thay vì string
@@ -49,38 +53,25 @@ class SangKienExporter extends Exporter
         ];
     }
 
-    public function getFormSchema(): array
-    {
-        return [
-            Forms\Components\Select::make('format')
-                ->label('Định dạng xuất')
-                ->options([
-                    'csv' => 'CSV',
-                    'xlsx' => 'Excel (XLSX)',
-                    'pdf' => 'PDF',
-                ])
-                ->default('xlsx')
-                ->required(),
-
-            Forms\Components\Checkbox::make('with_trashed')
-                ->label('Bao gồm các bản ghi đã xóa')
-                ->hidden(fn (): bool => ! static::$model::usesSoftDeletes()),
-        ];
-    }
-
     public static function getCompletedNotificationBody(Export $export): string
     {
-        $body = 'Xuất dữ liệu báo cáo sáng kiến của bạn đã hoàn tất và đã sẵn sàng để tải xuống.';
+        $body = 'Your institute export has completed and ' . number_format($export->successful_rows) . ' ' . str('row')->plural($export->successful_rows) . ' exported.';
 
-        if ($failureCount = $export->getFailureCount()) {
-            $body .= " {$failureCount} hàng không thể xuất.";
+        if ($failedRowsCount = $export->getFailedRowsCount()) {
+            $body .= ' ' . number_format($failedRowsCount) . ' ' . str('row')->plural($failedRowsCount) . ' failed to export.';
         }
 
         return $body;
     }
-
-    protected function getChunkSize(): int
+    public static function getNotifiableUser(Export $export): Authenticatable
     {
-        return 100; // Số bản ghi trong mỗi file
+        return $export->user;
     }
+
+    // Optional: Add this to make sure notifications are sent via database
+    protected function getNotificationChannels(): array
+    {
+        return ['database'];
+    }
+
 }
