@@ -76,10 +76,6 @@ class BaoCaoResource extends Resource
                     ->label('Trạng Thái')
                     ->sortable(),
 
-                TextColumn::make('ket_qua')
-                    ->label('Xếp Loại')
-                    ->sortable(),
-
                 TextColumn::make('created_at')
                     ->label('Ngày Tạo')
                     ->dateTime('d/m/Y')
@@ -140,46 +136,15 @@ class BaoCaoResource extends Resource
                             ->all();
                     }),
 
-                SelectFilter::make('ket_qua')
-                    ->label('Xếp Loại')
-                    ->options([
-                        'A' => 'Loại A',
-                        'B' => 'Loại B',
-                        'C' => 'Loại C',
-                    ])
-                    ->multiple()
-                    ->query(function (Builder $query, array $data): Builder {
-                        if (!empty($data['values'])) {
-                            $query->whereIn('ket_qua', $data['values']);
-                        }
-                        return $query;
-                    })
-                    ->indicateUsing(function (array $data): array {
-                        if (!$data['values'] || count($data['values']) === 0) {
-                            return [];
-                        }
-
-                        $options = [
-                            'A' => 'Loại A',
-                            'B' => 'Loại B',
-                            'C' => 'Loại C',
-                        ];
-
-                        return Collection::wrap($data['values'])
-                            ->map(function (string $value) use ($options): Indicator {
-                                $label = $options[$value] ?? $value;
-
-                                return Indicator::make("Xếp loại: {$label}");
-                            })
-                            ->all();
-                    }),
-
                 Filter::make('created_at')
                     ->form([
-                        Forms\Components\DatePicker::make('from')
-                            ->label('Từ ngày'),
-                        Forms\Components\DatePicker::make('until')
-                            ->label('Đến ngày'),
+                        Forms\Components\Grid::make(2)
+                            ->schema([
+                                Forms\Components\DatePicker::make('from')
+                                    ->label('Từ ngày'),
+                                Forms\Components\DatePicker::make('until')
+                                    ->label('Đến ngày'),
+                            ]),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         if (!empty($data['from'])) {
@@ -232,12 +197,15 @@ class BaoCaoResource extends Resource
                             ->disabled(),
                         Forms\Components\TextInput::make('user.name')
                             ->label('Tác giả')
+                            ->formatStateUsing(fn ($record) => $record->user?->name)
                             ->disabled(),
                         Forms\Components\TextInput::make('donVi.ten_don_vi')
                             ->label('Đơn vị')
+                            ->formatStateUsing(fn ($record) => $record->donVi?->ten_don_vi)
                             ->disabled(),
                         Forms\Components\TextInput::make('trangThaiSangKien.ten_trang_thai')
                             ->label('Trạng thái')
+                            ->formatStateUsing(fn ($record) => $record->trangThaiSangKien?->ten_trang_thai)
                             ->disabled(),
                     ])
                     ->modalHeading('Chi tiết sáng kiến')
@@ -250,6 +218,10 @@ class BaoCaoResource extends Resource
                         ->color('success')
                         ->icon('heroicon-o-arrow-down-tray')
                         ->exporter(SangKienExporter::class)
+                        ->formats([
+                            'xlsx' => 'Excel',
+                            'csv' => 'CSV',
+                        ])
                 ]),
             ])
             ->headerActions([
@@ -258,6 +230,10 @@ class BaoCaoResource extends Resource
                     ->color('success')
                     ->icon('heroicon-o-arrow-down-tray')
                     ->exporter(SangKienExporter::class)
+                    ->formats([
+                        'xlsx' => 'Excel',
+                        'csv' => 'CSV',
+                    ])
             ])
             ->defaultSort('created_at', 'desc');
     }
