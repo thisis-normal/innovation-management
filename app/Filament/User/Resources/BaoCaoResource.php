@@ -25,6 +25,11 @@ use App\Models\DonVi;
 use Filament\Forms\Components\RichEditor;
 use Filament\Tables\Filters\Indicator;
 use Illuminate\Support\Collection;
+use Filament\Actions\Exports\Models\Export;
+use Filament\Actions\Exports\Exporter;
+use Filament\Tables\Actions\ExportAction;
+use Filament\Tables\Actions\ExportBulkAction;
+use App\Exports\SangKienExporter;
 
 class BaoCaoResource extends Resource
 {
@@ -237,6 +242,22 @@ class BaoCaoResource extends Resource
                     ])
                     ->modalHeading('Chi tiết sáng kiến')
                     ->modalWidth('5xl'),
+            ])
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    ExportBulkAction::make()
+                        ->label('Xuất dữ liệu')
+                        ->color('success')
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->exporter(SangKienExporter::class)
+                ]),
+            ])
+            ->headerActions([
+                ExportAction::make()
+                    ->label('Xuất dữ liệu')
+                    ->color('success')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->exporter(SangKienExporter::class)
             ])
             ->defaultSort('created_at', 'desc');
     }
