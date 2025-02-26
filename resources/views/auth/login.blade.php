@@ -151,7 +151,7 @@
 
                     <div class="form-group">
                         <label>TÊN ĐĂNG NHẬP</label>
-                        <input type="text" name="name" required>
+                        <input type="text" name="username" required>
                     </div>
 
                     <div class="form-group">
