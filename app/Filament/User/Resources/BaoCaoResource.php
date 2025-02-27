@@ -38,6 +38,7 @@ class BaoCaoResource extends Resource
     protected static ?string $navigationLabel = 'Báo Cáo';
     protected static ?string $pluralModelLabel = 'Báo Cáo';
     protected static ?string $modelLabel = 'Báo Cáo';
+    protected static ?string $slug = 'bao-cao';
     protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form

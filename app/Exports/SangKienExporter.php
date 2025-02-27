@@ -12,15 +12,12 @@ use Illuminate\Support\Facades\Log;
 class SangKienExporter extends Exporter
 {
     protected static ?string $model = SangKien::class;
+    protected static bool $shouldQueue = false;
 
     public function getFileName(Export $export): string
     {
-        try {
-            return "sang_kien-{$export->getKey()}.xlsx";
-        } catch (\Exception $e) {
-            Log::error('Export filename error: ' . $e->getMessage());
-            return 'sang_kien-export.xlsx';
-        }
+//        return 'bao-cao-' . date('Y-m-d');
+        return "sang_kien-{$export->getKey()}.xlsx";
     }
 
     // Sửa phương thức này để sử dụng ExportColumn thay vì string
@@ -55,23 +52,23 @@ class SangKienExporter extends Exporter
 
     public static function getCompletedNotificationBody(Export $export): string
     {
-        $body = 'Your institute export has completed and ' . number_format($export->successful_rows) . ' ' . str('row')->plural($export->successful_rows) . ' exported.';
+        $body = 'Xuất dữ liệu sáng kiến thành công và ' . number_format($export->successful_rows) . ' dòng đã được xuất.';
 
         if ($failedRowsCount = $export->getFailedRowsCount()) {
-            $body .= ' ' . number_format($failedRowsCount) . ' ' . str('row')->plural($failedRowsCount) . ' failed to export.';
+            $body .= ' ' . number_format($failedRowsCount) . ' ' . str('dòng')->plural($failedRowsCount) . ' không thể xuất.';
         }
 
         return $body;
     }
-    public static function getNotifiableUser(Export $export): Authenticatable
+    public static function getCompletedNotificationTitle (Export $export): string
     {
-        return $export->user;
+        return 'Xuất dữ liệu sáng kiến hoàn tất';
     }
-
-    // Optional: Add this to make sure notifications are sent via database
-    protected function getNotificationChannels(): array
+    public function getOptions(): array
     {
-        return ['database'];
+        return [
+            'queue' => false,
+        ];
     }
 
 }
