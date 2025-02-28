@@ -12,6 +12,7 @@ class VaiTro extends Model
     protected $table = 'vai_tro';
 
     protected $fillable = [
+        'ma_vai_tro',
         'ten_vai_tro',
         'mo_ta',
         'trang_thai',
@@ -20,7 +21,7 @@ class VaiTro extends Model
     ];
 
     protected $casts = [
-        'trang_thai' => 'tinyint(1)'
+        'trang_thai' => 'boolean'
     ];
 
     public function nguoiDungs()

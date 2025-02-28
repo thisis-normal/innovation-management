@@ -21,7 +21,7 @@ class DonVi extends Model
     ];
 
     protected $casts = [
-        'trang_thai' => 'tinyint(1)'
+        'trang_thai' => 'boolean'
     ];
 
     public function donViCha()
