@@ -15,6 +15,7 @@ use Illuminate\Notifications\Notifiable;
 
 /**
  * @property Collection|VaiTro[] $roles
+ * @property Collection|DonVi[] $ma_don_vi
  */
 class User extends Authenticatable implements FilamentUser
 {

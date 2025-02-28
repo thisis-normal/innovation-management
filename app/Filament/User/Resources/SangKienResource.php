@@ -78,6 +78,7 @@ class SangKienResource extends Resource
                         'files.maxSize' => 'Dung lượng tối đa 10MB/file.',
                     ]),
                 Hidden::make('ma_tac_gia')->default(Auth::id()),
+                Hidden::make('ma_don_vi')->default(Auth::user()->ma_don_vi),
             ]);
     }
 
