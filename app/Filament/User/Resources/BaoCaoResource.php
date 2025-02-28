@@ -3,9 +3,8 @@
 namespace App\Filament\User\Resources;
 
 use App\Filament\User\Resources\BaoCaoResource\Pages;
-use App\Filament\User\Resources\BaoCaoResource\RelationManagers;
-use App\Models\BaoCao;
 use App\Models\SangKien;
+use Filament\Actions\Exports\Enums\ExportFormat;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -39,6 +38,7 @@ class BaoCaoResource extends Resource
     protected static ?string $navigationLabel = 'Báo Cáo';
     protected static ?string $pluralModelLabel = 'Báo Cáo';
     protected static ?string $modelLabel = 'Báo Cáo';
+    protected static ?string $slug = 'bao-cao';
     protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
@@ -212,17 +212,14 @@ class BaoCaoResource extends Resource
                     ->modalWidth('5xl'),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    ExportBulkAction::make()
-                        ->label('Xuất dữ liệu')
-                        ->color('success')
-                        ->icon('heroicon-o-arrow-down-tray')
-                        ->exporter(SangKienExporter::class)
-                        ->formats([
-                            'xlsx' => 'Excel',
-                            'csv' => 'CSV',
-                        ])
-                ]),
+                ExportBulkAction::make()
+                    ->label('Xuất dữ liệu')
+                    ->color('success')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->exporter(SangKienExporter::class)
+                    ->formats([
+                        ExportFormat::Xlsx,
+                    ])
             ])
             ->headerActions([
                 ExportAction::make()
@@ -230,9 +227,9 @@ class BaoCaoResource extends Resource
                     ->color('success')
                     ->icon('heroicon-o-arrow-down-tray')
                     ->exporter(SangKienExporter::class)
+                    ->columnMapping(false)
                     ->formats([
-                        'xlsx' => 'Excel',
-                        'csv' => 'CSV',
+                        ExportFormat::Xlsx,
                     ])
             ])
             ->defaultSort('created_at', 'desc');

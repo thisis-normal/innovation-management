@@ -6,17 +6,18 @@ use App\Models\SangKien;
 use Filament\Actions\Exports\Exporter;
 use Filament\Actions\Exports\Models\Export;
 use Filament\Actions\Exports\ExportColumn;
-use Filament\Forms;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Support\Facades\Log;
 
 class SangKienExporter extends Exporter
 {
     protected static ?string $model = SangKien::class;
+    protected static bool $shouldQueue = false;
 
-    // Sử dụng fileNamePrefix theo tài liệu chính thức
-    protected static function fileNamePrefix(): string
+    public function getFileName(Export $export): string
     {
-        return 'bao-cao-sang-kien';
+//        return 'bao-cao-' . date('Y-m-d');
+        return "sang_kien-{$export->getKey()}.xlsx";
     }
 
     // Sửa phương thức này để sử dụng ExportColumn thay vì string
@@ -49,38 +50,25 @@ class SangKienExporter extends Exporter
         ];
     }
 
-    public function getFormSchema(): array
-    {
-        return [
-            Forms\Components\Select::make('format')
-                ->label('Định dạng xuất')
-                ->options([
-                    'csv' => 'CSV',
-                    'xlsx' => 'Excel (XLSX)',
-                    'pdf' => 'PDF',
-                ])
-                ->default('xlsx')
-                ->required(),
-
-            Forms\Components\Checkbox::make('with_trashed')
-                ->label('Bao gồm các bản ghi đã xóa')
-                ->hidden(fn (): bool => ! static::$model::usesSoftDeletes()),
-        ];
-    }
-
     public static function getCompletedNotificationBody(Export $export): string
     {
-        $body = 'Xuất dữ liệu báo cáo sáng kiến của bạn đã hoàn tất và đã sẵn sàng để tải xuống.';
+        $body = 'Xuất dữ liệu sáng kiến thành công và ' . number_format($export->successful_rows) . ' dòng đã được xuất.';
 
-        if ($failureCount = $export->getFailureCount()) {
-            $body .= " {$failureCount} hàng không thể xuất.";
+        if ($failedRowsCount = $export->getFailedRowsCount()) {
+            $body .= ' ' . number_format($failedRowsCount) . ' ' . str('dòng')->plural($failedRowsCount) . ' không thể xuất.';
         }
 
         return $body;
     }
-
-    protected function getChunkSize(): int
+    public static function getCompletedNotificationTitle (Export $export): string
     {
-        return 100; // Số bản ghi trong mỗi file
+        return 'Xuất dữ liệu sáng kiến hoàn tất';
     }
+    public function getOptions(): array
+    {
+        return [
+            'queue' => false,
+        ];
+    }
+
 }
