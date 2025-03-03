@@ -63,9 +63,10 @@ class QuanLyNguoiDungResource extends Resource
                             ->label('Đơn vị')
                             ->multiple()
                             ->options(function() {
-                                return \App\Models\DonVi::pluck('ten_don_vi', 'id');
+                                return DonVi::getTreeOptions();
                             })
                             ->preload()
+                            ->searchable()
                             ->required(),
                     ])
                     ->columns(2)

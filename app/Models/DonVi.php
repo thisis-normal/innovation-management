@@ -43,4 +43,53 @@ class DonVi extends Model
     {
         return $this->belongsToMany(User::class, 'lnk_nguoi_dung_don_vi', 'don_vi_id', 'nguoi_dung_id');
     }
+
+    public static function getTreeData()
+    {
+        $allDonVi = self::all();
+
+        return $allDonVi->map(function ($donVi) {
+            return [
+                'id' => $donVi->id,
+                'parent_id' => $donVi->don_vi_cha_id,
+                'title' => $donVi->ten_don_vi,
+            ];
+        })->toArray();
+    }
+
+    public static function getTreeOptions($excludeId = null)
+    {
+        $allDonVis = self::all();
+        $options = [];
+
+        // Lấy các đơn vị gốc
+        $rootDonVis = $allDonVis->whereNull('don_vi_cha_id')->sortBy('ten_don_vi');
+
+        foreach ($rootDonVis as $donVi) {
+            if ($donVi->id == $excludeId) continue;
+
+            // Đơn vị gốc luôn dùng icon folder
+            $options[$donVi->id] = "📁 " . $donVi->ten_don_vi;
+
+            // Lấy đơn vị con cấp 1
+            $children = $allDonVis->where('don_vi_cha_id', $donVi->id)->sortBy('ten_don_vi');
+            foreach ($children as $child) {
+                if ($child->id == $excludeId) continue;
+
+                // Đơn vị con cấp 1 dùng icon folder nếu có con, ngược lại dùng icon file
+                $hasGrandChildren = $allDonVis->where('don_vi_cha_id', $child->id)->count() > 0;
+                $icon = $hasGrandChildren ? "📁" : "📄";
+                $options[$child->id] = "    └─ " . $icon . " " . $child->ten_don_vi;
+
+                // Lấy đơn vị con cấp 2
+                $grandChildren = $allDonVis->where('don_vi_cha_id', $child->id)->sortBy('ten_don_vi');
+                foreach ($grandChildren as $grandChild) {
+                    if ($grandChild->id == $excludeId) continue;
+                    $options[$grandChild->id] = "        └─ " . "📄 " . $grandChild->ten_don_vi;
+                }
+            }
+        }
+
+        return $options;
+    }
 }

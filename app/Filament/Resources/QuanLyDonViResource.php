@@ -12,6 +12,8 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Forms\Components\Select;
+use CodeWithDennis\FilamentSelectTree\Forms\Components\TreeSelect;
 
 class QuanLyDonViResource extends Resource
 {
@@ -35,9 +37,11 @@ class QuanLyDonViResource extends Resource
                     ->maxLength(65535)
                     ->label('Mô tả'),
 
-                Forms\Components\Select::make('don_vi_cha_id')
-                    ->relationship('donViCha', 'ten_don_vi')
+                Select::make('don_vi_cha_id')
                     ->label('Đơn vị cha')
+                    ->options(function ($record) {
+                        return DonVi::getTreeOptions($record?->id);
+                    })
                     ->searchable()
                     ->preload(),
 
