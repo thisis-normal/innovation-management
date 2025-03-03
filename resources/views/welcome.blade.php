@@ -13,7 +13,6 @@
                 <img src="/img/logo-mb.png" alt="VNPT Logo" class="h-12">
                 <div class="flex gap-4">
                     <a href="{{ route('register') }}" class="text-lg text-black hover:text-gray-700 font-medium">đăng ký</a>
-                    <a href="{{ route('login') }}" class="inline-block bg-white text-black px-8 py-2 rounded-full font-medium hover:bg-gray-100 transition-colors">Admin</a>
                 </div>
             </div>
             <!-- Main content -->
@@ -21,7 +20,7 @@
                 <!-- Left side - Logo -->
                 <div class="flex justify-center items-center pr-2">
                     <div class="relative">
-                        <img src="/img/logosakisola.png" alt="SOKISOLA Logo" class="w-80">
+                        <img src="/img/logosakisola.png" alt="SAKISOLA Logo" class="w-96">
                     </div>
                 </div>
 
