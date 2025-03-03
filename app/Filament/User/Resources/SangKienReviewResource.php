@@ -124,6 +124,10 @@ class SangKienReviewResource extends Resource
                 //
             ])
             ->actions([
+                Tables\Actions\ViewAction::make()
+                    ->label('Xem chi tiết')
+                    ->icon('heroicon-o-eye'),
+
                 Tables\Actions\Action::make('approve')
                     ->label('Phê duyệt')
                     ->icon('heroicon-o-check-circle')
@@ -228,10 +232,6 @@ class SangKienReviewResource extends Resource
                         }
                         return false;
                     }),
-
-                // Optional: View action to see details
-//                Tables\Actions\ViewAction::make()
-//                    ->url(fn (SangKien $record): string => SangKienReviewResource::getUrl('view', ['record' => $record])),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -251,9 +251,7 @@ class SangKienReviewResource extends Resource
     {
         return [
             'index' => Pages\ListSangKienReviews::route('/'),
-//            'view' => Pages\ViewSangKienReview::route('/{record}'),
-//            'create' => Pages\CreateSangKienReview::route('/create'),
-//            'edit' => Pages\EditSangKienReview::route('/{record}/edit'),
+            'view' => Pages\ViewSangKienReview::route('/{record}'),
         ];
     }
 }
