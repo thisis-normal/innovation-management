@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Forms\Components\Select;
 use CodeWithDennis\FilamentSelectTree\Forms\Components\TreeSelect;
+use CodeWithDennis\FilamentSelectTree\SelectTree;
 
 class QuanLyDonViResource extends Resource
 {
@@ -37,13 +38,17 @@ class QuanLyDonViResource extends Resource
                     ->maxLength(65535)
                     ->label('Mô tả'),
 
-                Select::make('don_vi_cha_id')
+                SelectTree::make('don_vi_cha_id')
                     ->label('Đơn vị cha')
-                    ->options(function ($record) {
-                        return DonVi::getTreeOptions($record?->id);
-                    })
+                    ->relationship('donViCha', 'ten_don_vi', 'don_vi_cha_id')
                     ->searchable()
-                    ->preload(),
+                    ->preload()
+                    ->enableBranchNode()
+                    ->defaultOpenLevel(2)
+                    ->disabledOptions(function ($record) {
+                        if (!$record) return [];
+                        return [$record->id];
+                    }),
 
                 Forms\Components\Toggle::make('trang_thai')
                     ->label('Trạng thái')
