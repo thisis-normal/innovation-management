@@ -17,11 +17,12 @@ class QuanLyVaiTroResource extends Resource
 {
     protected static ?string $model = VaiTro::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-user-circle';
     protected static ?string $navigationLabel = 'Quản lý vai trò';
     protected static ?string $modelLabel = 'Quản lý vai trò';
     protected static ?string $pluralModelLabel = 'Quản lý vai trò';
     protected static ?string $slug = 'quan-ly-vai-tro';
+    protected static ?int $navigationSort = 2;
     public static function form(Form $form): Form
     {
         return $form
@@ -75,6 +76,7 @@ class QuanLyVaiTroResource extends Resource
                 Tables\Columns\IconColumn::make('trang_thai')
                     ->label('Trạng thái')
                     ->boolean()
+                    ->alignCenter()
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('created_at')
@@ -91,17 +93,27 @@ class QuanLyVaiTroResource extends Resource
                     ]),
             ])
             ->actions([
-                Tables\Actions\EditAction::make()
-                    ->label('Sửa'),
+                Tables\Actions\EditAction::make()->label('Chỉnh sửa'),
                 Tables\Actions\DeleteAction::make()
-                    ->label('Xóa'),
+                    ->label('Xóa')
+                    ->modalHeading('Xóa vai trò')
+                    ->modalDescription('Bạn có chắc chắn muốn xóa vai trò này?')
+                    ->modalSubmitActionLabel('Xóa')
+                    ->modalCancelActionLabel('Hủy bỏ'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
-                        ->label('Xóa đã chọn'),
+                        ->modalHeading('Xóa vai trò đã chọn')
+                        ->modalDescription('Bạn có chắc chắn muốn xóa những vai trò đã chọn?')
+                        ->modalSubmitActionLabel('Xóa')
+                        ->modalCancelActionLabel('Hủy bỏ'),
                 ]),
-            ]);
+            ])
+            ->paginated([
+                'reorderRecordsTriggerAction' => false,
+            ])
+            ->searchable();
     }
 
     public static function getRelations(): array

@@ -92,4 +92,32 @@ class DonVi extends Model
 
         return $options;
     }
+
+    public function getAllParentIds()
+    {
+        $parentIds = [];
+        $current = $this;
+
+        while ($current->don_vi_cha_id !== null) {
+            $parentIds[] = $current->don_vi_cha_id;
+            $current = $current->donViCha;
+        }
+
+        return $parentIds;
+    }
+
+    public function getAllChildIds()
+    {
+        $childIds = [];
+        $this->addChildIds($this, $childIds);
+        return $childIds;
+    }
+
+    private function addChildIds($donVi, &$childIds)
+    {
+        foreach ($donVi->donViCon as $child) {
+            $childIds[] = $child->id;
+            $this->addChildIds($child, $childIds);
+        }
+    }
 }

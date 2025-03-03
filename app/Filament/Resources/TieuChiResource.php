@@ -20,7 +20,7 @@ class TieuChiResource extends Resource
     protected static ?string $modelLabel = 'Tiêu chí chấm điểm';
     protected static ?string $pluralModelLabel = 'Tiêu chí chấm điểm';
     protected static ?string $slug = 'tieu-chi';
-
+    protected static ?int $navigationSort = 4;
     public static function form(Form $form): Form
     {
         return $form
@@ -79,13 +79,27 @@ class TieuChiResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()->label('Chỉnh sửa'),
+                Tables\Actions\DeleteAction::make()
+                    ->label('Xóa')
+                    ->modalHeading('Xóa tiêu chí')
+                    ->modalDescription('Bạn có chắc chắn muốn xóa tiêu chí này?')
+                    ->modalSubmitActionLabel('Xóa')
+                    ->modalCancelActionLabel('Hủy bỏ'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->modalHeading('Xóa tiêu chí đã chọn')
+                        ->modalDescription('Bạn có chắc chắn muốn xóa những tiêu chí đã chọn?')
+                        ->modalSubmitActionLabel('Xóa')
+                        ->modalCancelActionLabel('Hủy bỏ'),
                 ]),
-            ]);
+            ])
+            ->paginated([
+                'reorderRecordsTriggerAction' => false,
+            ])
+            ->searchable();
     }
 
     public static function getRelations(): array

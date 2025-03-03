@@ -40,12 +40,21 @@ class SangKienResource extends Resource
         return $form
             ->schema([
                 TextInput::make('ten_sang_kien')->label('Tên sáng kiến')->required()->columnSpan('full'),
-                RichEditor::make('hien_trang')->label('Hiện trạng')->disableToolbarButtons(['attachFiles', 'link'])->required()->columnSpan('full'),
-                RichEditor::make('mo_ta')->label('Mô tả')
+                RichEditor::make('truoc_khi_ap_dung')
+                    ->label('Trước khi áp dụng')
                     ->disableToolbarButtons(['attachFiles', 'link'])
                     ->required()
                     ->columnSpan('full'),
-                RichEditor::make('ket_qua')->label('Kết quả')->disableToolbarButtons(['attachFiles', 'link'])->required()->columnSpan('full'),
+                RichEditor::make('mo_ta')
+                    ->label('Mô tả')
+                    ->disableToolbarButtons(['attachFiles', 'link'])
+                    ->required()
+                    ->columnSpan('full'),
+                RichEditor::make('sau_khi_ap_dung')
+                    ->label('Sau khi áp dụng')
+                    ->disableToolbarButtons(['attachFiles', 'link'])
+                    ->required()
+                    ->columnSpan('full'),
                 FileUpload::make('files')
                     ->disk('public')
                     ->label('File')
@@ -63,8 +72,8 @@ class SangKienResource extends Resource
                     ->openable()
                     ->required()
                     ->columnSpan('full')
-                    ->maxSize(10 * 1024) // 10 MB
-                    ->helperText('Chỉ chấp nhận các loại file: DOC, DOCX, PDF, XLS, XLSX. Dung lượng tối đa 10MB/file.')
+                    ->maxSize(50 * 1024) // 50 MB
+                    ->helperText('Chỉ chấp nhận các loại file: DOC, DOCX, PDF, XLS, XLSX. Dung lượng tối đa 50MB/file.')
                     ->afterStateHydrated(function ($state, callable $set, $record) {
                         if ($record) {
                             $set('files', TaiLieuSangKien::query()->where('sang_kien_id', $record->id)
@@ -75,7 +84,7 @@ class SangKienResource extends Resource
                     ->validationMessages([
                         'files.max' => 'Số lượng file tối đa là 5.',
                         'files.acceptedFileTypes' => 'Chỉ chấp nhận các loại file: DOC, DOCX, PDF, XLS, XLSX.',
-                        'files.maxSize' => 'Dung lượng tối đa 10MB/file.',
+                        'files.maxSize' => 'Dung lượng tối đa 50MB/file.',
                     ]),
                 Hidden::make('ma_tac_gia')->default(Auth::id()),
                 Hidden::make('ma_don_vi')->default(Auth::user()->ma_don_vi),
@@ -94,13 +103,24 @@ class SangKienResource extends Resource
             )
             ->columns([
                 TextColumn::make('ten_sang_kien')->label('Tên sáng kiến')->searchable()->sortable(),
-                TextColumn::make('hien_trang')->label('Hiện trạng')->searchable()->sortable()->limit(50)->state(fn ($record) => strip_tags($record->hien_trang)),
-                TextColumn::make('mo_ta')->label('Mô tả')
+                TextColumn::make('truoc_khi_ap_dung')
+                    ->label('Trước khi áp dụng')
+                    ->searchable()
+                    ->sortable()
+                    ->limit(50)
+                    ->state(fn ($record) => strip_tags($record->truoc_khi_ap_dung)),
+                TextColumn::make('mo_ta')
+                    ->label('Mô tả')
                     ->searchable()
                     ->sortable()
                     ->limit(50)
                     ->state(fn ($record) => strip_tags($record->mo_ta)),
-                TextColumn::make('ket_qua')->label('Kết quả')->searchable()->sortable()->limit(50)->state(fn ($record) => strip_tags($record->ket_qua)),
+                TextColumn::make('sau_khi_ap_dung')
+                    ->label('Sau khi áp dụng')
+                    ->searchable()
+                    ->sortable()
+                    ->limit(50)
+                    ->state(fn ($record) => strip_tags($record->sau_khi_ap_dung)),
                 TextColumn::make('user.name')->label('Tác giả')->searchable()->sortable(),
 
                 TextColumn::make('taiLieuSangKien.file_path')
@@ -130,7 +150,7 @@ class SangKienResource extends Resource
                         default => 'red', // Bold red for rejected or unknown states
                     }),
                 TextColumn::make('ghi_chu')->label('Ghi chú')
-                    ->limit(50)
+                    ->limit(100)
             ])
             ->filters([
                 Filter::make('Search')

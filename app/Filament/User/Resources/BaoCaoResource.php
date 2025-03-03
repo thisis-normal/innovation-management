@@ -39,7 +39,7 @@ class BaoCaoResource extends Resource
     protected static ?string $pluralModelLabel = 'Báo Cáo';
     protected static ?string $modelLabel = 'Báo Cáo';
     protected static ?string $slug = 'bao-cao';
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form
     {
@@ -58,10 +58,22 @@ class BaoCaoResource extends Resource
                     ->searchable()
                     ->sortable(),
 
+                TextColumn::make('truoc_khi_ap_dung')
+                    ->label('Trước khi áp dụng')
+                    ->limit(50)
+                    ->searchable()
+                    ->state(fn ($record) => strip_tags($record->truoc_khi_ap_dung)),
+
                 TextColumn::make('mo_ta')
                     ->label('Mô Tả')
                     ->limit(50)
                     ->searchable(),
+
+                TextColumn::make('sau_khi_ap_dung')
+                    ->label('Sau khi áp dụng')
+                    ->limit(50)
+                    ->searchable()
+                    ->state(fn ($record) => strip_tags($record->sau_khi_ap_dung)),
 
                 TextColumn::make('user.name')
                     ->label('Tác Giả')
@@ -186,14 +198,14 @@ class BaoCaoResource extends Resource
                         Forms\Components\TextInput::make('ten_sang_kien')
                             ->label('Tên sáng kiến')
                             ->disabled(),
-                        Forms\Components\RichEditor::make('hien_trang')
-                            ->label('Hiện trạng')
+                        Forms\Components\RichEditor::make('truoc_khi_ap_dung')
+                            ->label('Trước khi áp dụng')
                             ->disabled(),
                         Forms\Components\RichEditor::make('mo_ta')
                             ->label('Mô tả')
                             ->disabled(),
-                        Forms\Components\RichEditor::make('ket_qua')
-                            ->label('Kết quả')
+                        Forms\Components\RichEditor::make('sau_khi_ap_dung')
+                            ->label('Sau khi áp dụng')
                             ->disabled(),
                         Forms\Components\TextInput::make('user.name')
                             ->label('Tác giả')

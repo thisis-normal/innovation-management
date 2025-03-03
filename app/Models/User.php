@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Traits\HasCustomRelations;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * @property Collection|VaiTro[] $roles
@@ -106,5 +107,27 @@ class User extends Authenticatable implements FilamentUser
         }
 
         return false; // Return false for invalid input
+    }
+
+    public function donVis(): BelongsToMany
+    {
+        return $this->belongsToMany(DonVi::class, 'lnk_nguoi_dung_don_vi', 'nguoi_dung_id', 'don_vi_id')
+            ->withPivot(['nguoi_tao', 'nguoi_cap_nhat'])
+            ->withTimestamps();
+    }
+
+    public function syncDonVis(array $donViIds)
+    {
+        // Xóa tất cả liên kết hiện tại
+        $this->lnkNguoiDungDonVis()->delete();
+
+        // Tạo lại các liên kết mới
+        foreach ($donViIds as $donViId) {
+            $this->lnkNguoiDungDonVis()->create([
+                'don_vi_id' => $donViId,
+                'nguoi_tao' => Auth::id() ?? 1,
+                'nguoi_cap_nhat' => Auth::id() ?? 1,
+            ]);
+        }
     }
 }

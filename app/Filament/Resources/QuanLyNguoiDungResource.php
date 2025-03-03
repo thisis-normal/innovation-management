@@ -16,17 +16,19 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use CodeWithDennis\FilamentSelectTree\SelectTree;
+use Filament\Actions\Action;
 
 class QuanLyNguoiDungResource extends Resource
 {
     protected static ?string $model = User::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-user-group';
     protected static ?string $navigationLabel = 'Quản lý người dùng';
     protected static ?string $modelLabel = 'Quản lý người dùng';
     protected static ?string $pluralModelLabel = 'Quản lý người dùng';
     protected static ?string $slug = 'quan-ly-nguoi-dung';
-
+    protected static ?int $navigationSort = 1;
     public static function form(Form $form): Form
     {
         return $form
@@ -48,7 +50,13 @@ class QuanLyNguoiDungResource extends Resource
                         Forms\Components\TextInput::make('password')
                             ->label('Mật khẩu')
                             ->password()
-                            ->dehydrateStateUsing(fn ($state) => Hash::make($state))
+                            ->revealable()
+                            ->dehydrateStateUsing(function ($state) {
+                                if (empty($state)) {
+                                    return null; // Trả về null nếu password trống
+                                }
+                                return Hash::make($state);
+                            })
                             ->required(fn (string $context): bool => $context === 'create'),
                         Forms\Components\Select::make('vai_tro_ids')
                             ->label('Vai trò')
@@ -59,15 +67,48 @@ class QuanLyNguoiDungResource extends Resource
                             })
                             ->preload()
                             ->required(),
-                        Forms\Components\Select::make('don_vi_ids')
+                        SelectTree::make('don_vi_ids')
                             ->label('Đơn vị')
-                            ->multiple()
-                            ->options(function() {
-                                return DonVi::getTreeOptions();
-                            })
-                            ->preload()
+                            ->relationship('donVis', 'ten_don_vi', 'don_vi_cha_id')
                             ->searchable()
-                            ->required(),
+                            ->enableBranchNode()
+                            ->defaultOpenLevel(2)
+                            ->saveRelationshipsUsing(function (User $record, array $state) {
+                                $record->syncDonVis($state);
+                            })
+                            ->rules([
+                                function() {
+                                    return function($attribute, $value, $fail) {
+                                        if (empty($value)) return;
+
+                                        foreach ($value as $donViId) {
+                                            $donVi = DonVi::find($donViId);
+                                            if (!$donVi) continue;
+
+                                            // Kiểm tra xem có chọn cả cha và con không
+                                            foreach ($value as $otherId) {
+                                                if ($donViId === $otherId) continue;
+
+                                                $otherDonVi = DonVi::find($otherId);
+                                                if (!$otherDonVi) continue;
+
+                                                // Nếu đơn vị hiện tại là con và đã chọn đơn vị cha
+                                                if ($donVi->don_vi_cha_id !== null &&
+                                                    in_array($donVi->don_vi_cha_id, $value)) {
+                                                    $fail("Không thể chọn cả đơn vị cha và đơn vị con.");
+                                                    return;
+                                                }
+
+                                                // Nếu đơn vị hiện tại là cha và đã chọn đơn vị con
+                                                if ($donVi->donViCon->contains('id', $otherId)) {
+                                                    $fail("Không thể chọn cả đơn vị cha và đơn vị con.");
+                                                    return;
+                                                }
+                                            }
+                                        }
+                                    };
+                                }
+                            ]),
                     ])
                     ->columns(2)
             ]);
@@ -93,13 +134,10 @@ class QuanLyNguoiDungResource extends Resource
                     ->label('Vai trò')
                     ->badge()
                     ->separator(','),
-                Tables\Columns\TextColumn::make('lnkNguoiDungDonVis.donVi.ten_don_vi')
+                Tables\Columns\TextColumn::make('donVis.ten_don_vi')
                     ->label('Đơn vị')
                     ->badge()
                     ->separator(','),
-                Tables\Columns\IconColumn::make('trang_thai_hoat_dong')
-                    ->label('Trạng thái')
-                    ->boolean(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Ngày tạo')
                     ->dateTime('d/m/Y H:i')
@@ -113,18 +151,32 @@ class QuanLyNguoiDungResource extends Resource
                     ->preload(),
                 Tables\Filters\SelectFilter::make('don_vi')
                     ->label('Đơn vị')
-                    ->relationship('lnkNguoiDungDonVis.donVi', 'ten_don_vi')
+                    ->relationship('donVis', 'ten_don_vi')
                     ->multiple()
                     ->preload(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()->label('Chỉnh sửa'),
+                Tables\Actions\DeleteAction::make()
+                    ->label('Xóa')
+                    ->modalHeading('Xóa người dùng')
+                    ->modalDescription('Bạn có chắc chắn muốn xóa người dùng này?')
+                    ->modalSubmitActionLabel('Xóa')
+                    ->modalCancelActionLabel('Hủy bỏ'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->modalHeading('Xóa người dùng đã chọn')
+                        ->modalDescription('Bạn có chắc chắn muốn xóa những người dùng đã chọn?')
+                        ->modalSubmitActionLabel('Xóa')
+                        ->modalCancelActionLabel('Hủy bỏ'),
                 ]),
-            ]);
+            ])
+            ->paginated([
+                'reorderRecordsTriggerAction' => false,
+            ])
+            ->searchable();
     }
 
     public static function getRelations(): array
@@ -141,5 +193,10 @@ class QuanLyNguoiDungResource extends Resource
             'create' => Pages\CreateQuanLyNguoiDung::route('/create'),
             'edit' => Pages\EditQuanLyNguoiDung::route('/{record}/edit'),
         ];
+    }
+
+    protected static function getDefaultTableRecordsPerPageSelectOption(): int
+    {
+        return 10;
     }
 }
