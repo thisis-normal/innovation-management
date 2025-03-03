@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\QuanLyDonViResource\Pages;
 use App\Filament\Resources\QuanLyDonViResource\RelationManagers;
 use App\Models\DonVi;
+use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -13,8 +14,6 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Forms\Components\Select;
-use CodeWithDennis\FilamentSelectTree\Forms\Components\TreeSelect;
-use CodeWithDennis\FilamentSelectTree\SelectTree;
 
 class QuanLyDonViResource extends Resource
 {
@@ -42,7 +41,6 @@ class QuanLyDonViResource extends Resource
                     ->label('Đơn vị cha')
                     ->relationship('donViCha', 'ten_don_vi', 'don_vi_cha_id')
                     ->searchable()
-                    ->preload()
                     ->enableBranchNode()
                     ->defaultOpenLevel(2)
                     ->disabledOptions(function ($record) {
