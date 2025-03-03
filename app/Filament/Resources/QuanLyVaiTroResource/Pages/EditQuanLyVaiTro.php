@@ -1,16 +1,16 @@
 <?php
 
-namespace App\Filament\Resources\TieuChiResource\Pages;
+namespace App\Filament\Resources\QuanLyVaiTroResource\Pages;
 
-use App\Filament\Resources\TieuChiResource;
+use App\Filament\Resources\QuanLyVaiTroResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Actions\Action;
 
-class EditTieuChi extends EditRecord
+class EditQuanLyVaiTro extends EditRecord
 {
-    protected static string $resource = TieuChiResource::class;
-    protected static ?string $title = 'Cập nhật tiêu chí';
+    protected static string $resource = QuanLyVaiTroResource::class;
+    protected static ?string $title = 'Cập nhật vai trò';
     protected static ?string $breadcrumb = 'Cập nhật';
 
     protected function getHeaderActions(): array
@@ -18,8 +18,8 @@ class EditTieuChi extends EditRecord
         return [
             Actions\DeleteAction::make()
                 ->label('Xóa')
-                ->modalHeading('Xóa tiêu chí')
-                ->modalDescription('Bạn có chắc chắn muốn xóa tiêu chí này?')
+                ->modalHeading('Xóa vai trò')
+                ->modalDescription('Bạn có chắc chắn muốn xóa vai trò này?')
                 ->modalSubmitActionLabel('Xóa')
                 ->modalCancelActionLabel('Hủy bỏ'),
         ];
@@ -41,10 +41,5 @@ class EditTieuChi extends EditRecord
     {
         return parent::getCancelFormAction()
             ->label('Huỷ bỏ');
-    }
-
-    protected function getSavedNotificationTitle(): ?string
-    {
-        return 'Đã lưu thay đổi thành công';
     }
 }

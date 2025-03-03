@@ -1,23 +1,26 @@
 <?php
 
-namespace App\Filament\Resources\TieuChiResource\Pages;
+namespace App\Filament\Resources\QuanLyVaiTroResource\Pages;
 
-use App\Filament\Resources\TieuChiResource;
+use App\Filament\Resources\QuanLyVaiTroResource;
 use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Actions\Action;
 
-class CreateTieuChi extends CreateRecord
+class CreateQuanLyVaiTro extends CreateRecord
 {
-    protected static string $resource = TieuChiResource::class;
-
-    protected static ?string $navigationLabel = 'Tạo mới tiêu chí';
-    protected static ?string $title = 'Tạo mới tiêu chí';
+    protected static string $resource = QuanLyVaiTroResource::class;
+    protected static ?string $title = 'Tạo mới vai trò';
     protected static ?string $breadcrumb = 'Tạo mới';
 
-    protected function getCreatedNotificationTitle(): ?string
+    protected function mutateFormDataBeforeCreate(array $data): array
     {
-        return 'Đã tạo tiêu chí thành công';
+        // Đảm bảo ma_vai_tro được gửi đi
+        if (empty($data['ma_vai_tro'])) {
+            throw new \Exception('Mã vai trò không được để trống');
+        }
+
+        return $data;
     }
 
     protected function getCreateFormAction(): Action

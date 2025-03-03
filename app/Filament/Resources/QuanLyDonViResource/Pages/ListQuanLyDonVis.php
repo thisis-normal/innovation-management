@@ -1,20 +1,20 @@
 <?php
 
-namespace App\Filament\Resources\TieuChiResource\Pages;
+namespace App\Filament\Resources\QuanLyDonViResource\Pages;
 
-use App\Filament\Resources\TieuChiResource;
+use App\Filament\Resources\QuanLyDonViResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 
-class ListTieuChis extends ListRecords
+class ListQuanLyDonVis extends ListRecords
 {
-    protected static string $resource = TieuChiResource::class;
-
+    protected static string $resource = QuanLyDonViResource::class;
+    protected static ?string $breadcrumb = 'Danh sách quản lý đơn vị';
     protected function getHeaderActions(): array
     {
         return [
             Actions\CreateAction::make()
-                ->label('Thêm tiêu chí mới'),
+                ->label('Thêm mới đơn vị'),
         ];
     }
 

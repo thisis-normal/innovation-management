@@ -1,24 +1,17 @@
 <?php
 
-namespace App\Filament\Resources\TieuChiResource\Pages;
+namespace App\Filament\Resources\QuanLyDonViResource\Pages;
 
-use App\Filament\Resources\TieuChiResource;
+use App\Filament\Resources\QuanLyDonViResource;
 use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Actions\Action;
 
-class CreateTieuChi extends CreateRecord
+class CreateQuanLyDonVi extends CreateRecord
 {
-    protected static string $resource = TieuChiResource::class;
-
-    protected static ?string $navigationLabel = 'Tạo mới tiêu chí';
-    protected static ?string $title = 'Tạo mới tiêu chí';
+    protected static string $resource = QuanLyDonViResource::class;
+    protected static ?string $title = 'Tạo mới đơn vị';
     protected static ?string $breadcrumb = 'Tạo mới';
-
-    protected function getCreatedNotificationTitle(): ?string
-    {
-        return 'Đã tạo tiêu chí thành công';
-    }
 
     protected function getCreateFormAction(): Action
     {

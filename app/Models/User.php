@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Traits\HasCustomRelations;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * @property Collection|VaiTro[] $roles
@@ -20,14 +22,13 @@ use Illuminate\Notifications\Notifiable;
 class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasCustomRelations;
     private mixed $email;
     private mixed $password;
     private mixed $username;
     private mixed $name;
     private mixed $email_verified_at;
     private mixed $remember_token;
-    private mixed $trang_thai_hoat_dong;
     private mixed $created_at;
     private mixed $updated_at;
     /**
@@ -36,13 +37,12 @@ class User extends Authenticatable implements FilamentUser
      * @var list<string>
      */
     protected $fillable = [
-        'username',
         'name',
+        'username',
         'email',
         'password',
         'email_verified_at',
         'remember_token',
-        'trang_thai_hoat_dong',
         'created_at',
         'updated_at'
     ];
@@ -76,7 +76,6 @@ class User extends Authenticatable implements FilamentUser
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'trang_thai_hoat_dong' => 'tinyint(1)'
     ];
 
     public function thanhVienHoiDongs(): HasMany
@@ -108,5 +107,27 @@ class User extends Authenticatable implements FilamentUser
         }
 
         return false; // Return false for invalid input
+    }
+
+    public function donVis(): BelongsToMany
+    {
+        return $this->belongsToMany(DonVi::class, 'lnk_nguoi_dung_don_vi', 'nguoi_dung_id', 'don_vi_id')
+            ->withPivot(['nguoi_tao', 'nguoi_cap_nhat'])
+            ->withTimestamps();
+    }
+
+    public function syncDonVis(array $donViIds)
+    {
+        // Xóa tất cả liên kết hiện tại
+        $this->lnkNguoiDungDonVis()->delete();
+
+        // Tạo lại các liên kết mới
+        foreach ($donViIds as $donViId) {
+            $this->lnkNguoiDungDonVis()->create([
+                'don_vi_id' => $donViId,
+                'nguoi_tao' => Auth::id() ?? 1,
+                'nguoi_cap_nhat' => Auth::id() ?? 1,
+            ]);
+        }
     }
 }

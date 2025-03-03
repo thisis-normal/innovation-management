@@ -9,7 +9,7 @@ use Filament\Resources\Pages\ListRecords;
 class ListBaoCaos extends ListRecords
 {
     protected static string $resource = BaoCaoResource::class;
-
+    protected static ?string $breadcrumb = 'Danh sách báo cáo';
     protected function getHeaderActions(): array
     {
         return [
