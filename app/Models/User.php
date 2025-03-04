@@ -27,7 +27,6 @@ class User extends Authenticatable implements FilamentUser
     private mixed $name;
     private mixed $email_verified_at;
     private mixed $remember_token;
-    private mixed $trang_thai_hoat_dong;
     private mixed $created_at;
     private mixed $updated_at;
     /**
@@ -42,7 +41,6 @@ class User extends Authenticatable implements FilamentUser
         'password',
         'email_verified_at',
         'remember_token',
-        'trang_thai_hoat_dong',
         'created_at',
         'updated_at'
     ];
@@ -76,7 +74,6 @@ class User extends Authenticatable implements FilamentUser
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'trang_thai_hoat_dong' => 'tinyint(1)'
     ];
 
     public function thanhVienHoiDongs(): HasMany

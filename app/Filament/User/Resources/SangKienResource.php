@@ -28,6 +28,7 @@ use ZipArchive;
 class SangKienResource extends Resource
 {
     protected static ?string $model = SangKien::class;
+    protected static bool $shouldSkipAuthorization = true;
     protected static ?string $navigationLabel = 'Sáng Kiến'; // Custom label in sidebar
     protected static ?string $pluralModelLabel = 'Sáng Kiến'; // Used for breadcrumbs
     protected static ?string $modelLabel = 'Sáng Kiến'; // Used in forms & buttons

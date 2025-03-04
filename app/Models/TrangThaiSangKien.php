@@ -23,7 +23,7 @@ class TrangThaiSangKien extends Model
     ];
 
     protected $casts = [
-        'is_active' => 'tinyint(1)'
+        'is_active' => 'boolean'
     ];
 
     public function sangKien(): HasMany
