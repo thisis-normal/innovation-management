@@ -5,8 +5,12 @@ use App\Http\Controllers\SearchController;
 use App\Mail\UserNotification;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
+    if (Auth::check()) {
+        return redirect('/user');
+    }
     return view('welcome');
 });
 
@@ -39,5 +43,10 @@ Route::get('/mail-test', function () {
         return 'Error sending email: ' . $e->getMessage();
     }
 });
+
+Route::get('/logout', function () {
+    Auth::logout();
+    return redirect('/');
+})->name('logout');
 
 require __DIR__.'/auth.php';
