@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SearchController;
+use App\Mail\UserNotification;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -23,5 +25,19 @@ Route::middleware('auth')->group(function () {
 // Route::get('/test-delete-grading', [TestController::class, 'testDeleteGrading']);
 // Route::get('/test-sth', [TestController::class, 'testSomething']);
 Route::get('/search', [SearchController::class, 'index'])->name('search');
+
+Route::get('/mail-test', function () {
+    try {
+        Mail::to('thuonghuunguyen2002@gmail.com')
+            ->send(new UserNotification([
+                'subject' => 'Test Email',
+                'title' => 'This is a test email',
+                'message' => 'If you can see this, your email configuration is working!'
+            ]));
+        return 'Email sent successfully!';
+    } catch (\Exception $e) {
+        return 'Error sending email: ' . $e->getMessage();
+    }
+});
 
 require __DIR__.'/auth.php';
