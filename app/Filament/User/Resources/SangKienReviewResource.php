@@ -24,7 +24,7 @@ class SangKienReviewResource extends Resource
     protected static ?string $navigationLabel = 'Xử lý sáng kiến';
     protected static ?string $pluralModelLabel = 'Xử lý sáng kiến';
     protected static ?string $slug = 'duyet-sang-kien';
-
+    protected static ?int $navigationSort = 2;
     public static function getEloquentQuery(): Builder
     {
         $query = parent::getEloquentQuery();
@@ -73,13 +73,24 @@ class SangKienReviewResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('ten_sang_kien')->label('Tên sáng kiến')->searchable()->sortable(),
-                TextColumn::make('hien_trang')->label('Hiện trạng')->searchable()->sortable()->limit(50)->state(fn ($record) => strip_tags($record->hien_trang)),
-                TextColumn::make('mo_ta')->label('Mô tả')
+                TextColumn::make('truoc_khi_ap_dung')
+                    ->label('Trước khi áp dụng')
+                    ->searchable()
+                    ->sortable()
+                    ->limit(50)
+                    ->state(fn ($record) => strip_tags($record->truoc_khi_ap_dung)),
+                TextColumn::make('mo_ta')
+                    ->label('Mô tả')
                     ->searchable()
                     ->sortable()
                     ->limit(50)
                     ->state(fn ($record) => strip_tags($record->mo_ta)),
-                TextColumn::make('ket_qua')->label('Kết quả')->searchable()->sortable()->limit(50)->state(fn ($record) => strip_tags($record->ket_qua)),
+                TextColumn::make('sau_khi_ap_dung')
+                    ->label('Sau khi áp dụng')
+                    ->searchable()
+                    ->sortable()
+                    ->limit(50)
+                    ->state(fn ($record) => strip_tags($record->sau_khi_ap_dung)),
                 TextColumn::make('user.name')->label('Tác giả')->searchable()->sortable(),
 
                 TextColumn::make('taiLieuSangKien.file_path')
@@ -113,6 +124,10 @@ class SangKienReviewResource extends Resource
                 //
             ])
             ->actions([
+                Tables\Actions\ViewAction::make()
+                    ->label('Xem chi tiết')
+                    ->icon('heroicon-o-eye'),
+
                 Tables\Actions\Action::make('approve')
                     ->label('Phê duyệt')
                     ->icon('heroicon-o-check-circle')
@@ -216,10 +231,6 @@ class SangKienReviewResource extends Resource
                         }
                         return false;
                     }),
-
-                // Optional: View action to see details
-//                Tables\Actions\ViewAction::make()
-//                    ->url(fn (SangKien $record): string => SangKienReviewResource::getUrl('view', ['record' => $record])),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -239,9 +250,7 @@ class SangKienReviewResource extends Resource
     {
         return [
             'index' => Pages\ListSangKienReviews::route('/'),
-//            'view' => Pages\ViewSangKienReview::route('/{record}'),
-//            'create' => Pages\CreateSangKienReview::route('/create'),
-//            'edit' => Pages\EditSangKienReview::route('/{record}/edit'),
+            'view' => Pages\ViewSangKienReview::route('/{record}'),
         ];
     }
 }

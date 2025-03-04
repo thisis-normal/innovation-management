@@ -19,8 +19,8 @@ class SangKien extends Model
         'ma_tac_gia',
         'ma_don_vi',
         'ma_trang_thai_sang_kien',
-        'hien_trang',
-        'ket_qua',
+        'truoc_khi_ap_dung',
+        'sau_khi_ap_dung',
         'ghi_chu'
     ];
 

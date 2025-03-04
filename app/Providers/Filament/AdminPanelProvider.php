@@ -11,7 +11,11 @@ use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\Support\Enums\MaxWidth;
+use Filament\Support\Facades\FilamentColor;
 use Filament\Widgets;
+use Hasnayeen\Themes\ThemesPlugin;
+use Hasnayeen\Themes\Http\Middleware\SetTheme;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -54,9 +58,27 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                SetTheme::class,
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+            ])
+            ->plugin(ThemesPlugin::make());
+    }
+
+    /**
+     * Bootstrap any application services.
+     */
+    public function boot(): void
+    {
+        FilamentColor::register([
+            'amber' => '#F59E0B', // Amber (yellow-orange) for pending actions
+            'calm-blue' => '#3B82F6', // Calm blue for checking
+            'indigo' => '#6366F1', // Indigo for reviewing
+            'lime' => '#84CC16', // Bright lime green for initial scoring
+            'emerald' => '#10B981', // Rich emerald green for secondary scoring
+            'green' => '#22C55E', // Vibrant green for approved items
+            'red' => '#EF4444', // Bold red for rejected or unknown states
+        ]);
     }
 }

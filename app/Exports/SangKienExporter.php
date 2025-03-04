@@ -33,6 +33,12 @@ class SangKienExporter extends Exporter
             ExportColumn::make('mo_ta')
                 ->label('Mô Tả'),
 
+            ExportColumn::make('truoc_khi_ap_dung')
+                ->label('Trước khi áp dụng'),
+
+            ExportColumn::make('sau_khi_ap_dung')
+                ->label('Sau khi áp dụng'),
+
             ExportColumn::make('user.name')
                 ->label('Tác Giả'),
 

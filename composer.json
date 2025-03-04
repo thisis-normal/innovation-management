@@ -7,11 +7,13 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "ext-zip": "*",
+        "codewithdennis/filament-select-tree": "^3.1",
         "filament/filament": "^3.2",
+        "hasnayeen/themes": "^3.0",
         "laravel/breeze": "^2.3",
         "laravel/framework": "^11.31",
-        "laravel/tinker": "^2.9",
-        "ext-zip": "*"
+        "laravel/tinker": "^2.9"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.15",
