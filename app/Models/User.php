@@ -92,6 +92,7 @@ class User extends Authenticatable implements FilamentUser
     {
         return $this->hasMany(LnkNguoiDungVaiTro::class, 'nguoi_dung_id', 'id');
     }
+
     public function roles(): BelongsToMany
     {
         return $this->belongsToMany(VaiTro::class, 'lnk_nguoi_dung_vai_tro', 'nguoi_dung_id', 'vai_tro_id');
