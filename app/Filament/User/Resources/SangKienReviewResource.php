@@ -33,9 +33,9 @@ class SangKienReviewResource extends Resource
         if (!$user) {
             return $query->whereRaw('1 = 0'); // No user, show nothing
         }
-        if ($user->hasRole('admin')) { //Assumed role name
-            return $query; // Admin sees all
-        }
+//        if ($user->hasRole('admin')) { //Assumed role name
+//            return $query; // Admin sees all
+//        }
         $roles = $user->roles->pluck('ma_vai_tro')->toArray();
 
         // If user has both roles, show all records with status 'pending_manager' and 'pending_secretary'
@@ -135,22 +135,22 @@ class SangKienReviewResource extends Resource
 
                         // Update status based on current user role
                         $user = auth()->user();
-                        if ($user->hasRole('secretary')) {
-                            // Get id from trang_thai_sang_kien table where ma_trang_thai = 'pending_secretary'
-                            $pendingSecretaryId = TrangThaiSangKien::query()->where('ma_trang_thai', 'pending_secretary')->first()->id;
-                            if ($currentStatus === $pendingSecretaryId) {
-                                //set new ma_trang_thai_sang_kien into ID which has ma_trang_thai = 'Reviewing'
-                                $record->ma_trang_thai_sang_kien = TrangThaiSangKien::query()->where('ma_trang_thai', 'Reviewing')->first()->id;
-                            }
-                        } elseif ($user->hasRole('manager')) {
-                            // Get id from trang_thai_sang_kien table where ma_trang_thai = 'pending_manager'
-                            $pendingManagerId = TrangThaiSangKien::query()->where('ma_trang_thai', 'pending_manager')->first()->id;
-                            if ($currentStatus === $pendingManagerId) {
-                                $record->ma_trang_thai_sang_kien = TrangThaiSangKien::query()->where('ma_trang_thai', 'pending_secretary')->first()->id;
-                            }
+                        $pendingSecretaryId = TrangThaiSangKien::query()->where('ma_trang_thai', 'pending_secretary')->first()->id;
+                        $pendingManagerId = TrangThaiSangKien::query()->where('ma_trang_thai', 'pending_manager')->first()->id;
+                        $reviewingId = TrangThaiSangKien::query()->where('ma_trang_thai', 'Reviewing')->first()->id;
+
+                        if ($user->hasRole('manager') && $currentStatus === $pendingManagerId) {
+                            // If the user is a manager and the current status is pending_manager, update to pending_secretary
+                            $record->ma_trang_thai_sang_kien = $pendingSecretaryId;
+                        } elseif ($user->hasRole('secretary') && $currentStatus === $pendingSecretaryId) {
+                            // If the user is a secretary and the current status is pending_secretary, update to Reviewing
+                            $record->ma_trang_thai_sang_kien = $reviewingId;
                         }
 
-                        $record->save();
+                        // Save the record if there was any change
+                        if ($record->isDirty('ma_trang_thai_sang_kien')) {
+                            $record->save();
+                        }
 
                         Notification::make()
                             ->title('Sáng kiến đã được phê duyệt')
@@ -162,7 +162,6 @@ class SangKienReviewResource extends Resource
                         if (auth()->user()->hasRole('manager') || auth()->user()->hasRole('secretary')) {
                             return true;
                         }
-
                         return false;
                     }),
 
