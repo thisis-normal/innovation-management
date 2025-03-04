@@ -14,6 +14,8 @@ use Filament\Support\Colors\Color;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Support\Facades\FilamentColor;
 use Filament\Widgets;
+use Hasnayeen\Themes\ThemesPlugin;
+use Hasnayeen\Themes\Http\Middleware\SetTheme;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -57,10 +59,12 @@ class UserPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                SetTheme::class,
             ])
             ->authMiddleware([
                 Authenticate::class,
             ])
+            ->plugin(ThemesPlugin::make())
             ->sidebarCollapsibleOnDesktop();
     }
     /**
