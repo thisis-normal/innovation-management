@@ -14,6 +14,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Traits\HasCustomRelations;
 use Illuminate\Support\Facades\Auth;
+use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Support\Facades\Hash;
 
 /**
  * @property Collection|VaiTro[] $roles
@@ -22,7 +24,7 @@ use Illuminate\Support\Facades\Auth;
 class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, HasCustomRelations;
+    use HasFactory, Notifiable, HasCustomRelations, HasRoles;
     private mixed $email;
     private mixed $password;
     private mixed $username;
