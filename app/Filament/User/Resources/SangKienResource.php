@@ -89,6 +89,7 @@ class SangKienResource extends Resource
                     ]),
                 Hidden::make('ma_tac_gia')->default(Auth::id()),
                 Hidden::make('ma_don_vi')->default(Auth::user()->ma_don_vi),
+                Hidden::make('ma_trang_thai_sang_kien')->default(TrangThaiSangKien::query()->where('ma_trang_thai', 'draft')->first()->id),
             ]);
     }
 
@@ -123,7 +124,6 @@ class SangKienResource extends Resource
                     ->limit(50)
                     ->state(fn ($record) => strip_tags($record->sau_khi_ap_dung)),
                 TextColumn::make('user.name')->label('Tác giả')->searchable()->sortable(),
-
                 TextColumn::make('taiLieuSangKien.file_path')
                     ->label('File đính kèm')
                     ->limit(20)

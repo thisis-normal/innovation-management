@@ -22,6 +22,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Filament\Navigation\MenuItem;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -35,9 +36,15 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->authGuard('web')
             ->colors([
                 'primary' => Color::Amber,
             ])
+            ->brandLogo(asset('img/logo-vnpt.png'))
+            ->darkModeBrandLogo(asset('img/logo-mb.png'))
+            ->brandLogoHeight('3rem')
+            ->sidebarWidth('25rem')
+            ->maxContentWidth(MaxWidth::Full)
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
@@ -47,6 +54,19 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 Widgets\AccountWidget::class,
                 Widgets\FilamentInfoWidget::class,
+            ])
+            ->userMenuItems([
+//                'profile' => MenuItem::make()
+//                    ->label('Chỉnh sửa thông tin')
+//                    ->url(fn () => UserResource::getUrl('edit', ['record' => filament()->auth()->user()?->id])),
+                'user' => MenuItem::make()
+                    ->label('Trang người dùng')
+                    ->url('/user')
+                    ->icon('heroicon-o-users'),
+                'logout' => MenuItem::make()
+                    ->label('Đăng xuất')
+                    ->url('/logout')
+                    ->icon('heroicon-o-arrow-left-on-rectangle'),
             ])
             ->middleware([
                 EncryptCookies::class,

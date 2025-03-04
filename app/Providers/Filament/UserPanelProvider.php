@@ -22,6 +22,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Filament\Navigation\MenuItem;
 
 class UserPanelProvider extends PanelProvider
 {
@@ -33,9 +34,13 @@ class UserPanelProvider extends PanelProvider
         return $panel
             ->id('user')
             ->path('user')
+            ->authGuard('web')
             ->colors([
                 'primary' => Color::Amber,
             ])
+            ->brandLogo(asset('img/logo-vnpt.png'))
+            ->darkModeBrandLogo(asset('img/logo-mb.png'))
+            ->brandLogoHeight('3rem')
             ->sidebarWidth('25rem')
             ->maxContentWidth(MaxWidth::Full)
             ->discoverResources(in: app_path('Filament/User/Resources'), for: 'App\\Filament\\User\\Resources')
@@ -65,7 +70,25 @@ class UserPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->plugin(ThemesPlugin::make())
-            ->sidebarCollapsibleOnDesktop();
+            ->sidebarCollapsibleOnDesktop()
+//            ->renderHook(
+//                'panels::footer',
+//                fn () => view('custom-footer')
+//            )
+            ->userMenuItems([
+//                'profile' => MenuItem::make()
+//                    ->label('Chỉnh sửa thông tin')
+//                    ->url(fn () => UserResource::getUrl('edit', ['record' => filament()->auth()->user()?->id])),
+                'admin' => MenuItem::make()
+                    ->label('Trang quản trị')
+                    ->url('/admin')
+                    ->icon('heroicon-o-cog-6-tooth')
+                    ->visible(fn () => in_array('admin', filament()->auth()->user()?->roles->pluck('ma_vai_tro')->toArray() ?? [])),
+                'logout' => MenuItem::make()
+                    ->label('Đăng xuất')
+                    ->url('/logout')
+                    ->icon('heroicon-o-arrow-left-on-rectangle'),
+            ]);
     }
     /**
      * Bootstrap any application services.
