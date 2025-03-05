@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 /**
+ * @property integer $id
  * @property Collection|VaiTro[] $roles
  * @property Collection|DonVi[] $ma_don_vi
  */
