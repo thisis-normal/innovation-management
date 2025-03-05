@@ -22,6 +22,21 @@ class EditQuanLyNguoiDung extends EditRecord
         return $data;
     }
 
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        // Load vai_tro_ids
+        $data['vai_tro_ids'] = $this->record->lnkNguoiDungVaiTros()
+            ->pluck('vai_tro_id')
+            ->toArray();
+
+        // Load don_vi_ids
+        $data['don_vi_ids'] = $this->record->lnkNguoiDungDonVis()
+            ->pluck('don_vi_id')
+            ->toArray();
+
+        return $data;
+    }
+
     protected function afterSave(): void
     {
         $user = $this->record;
@@ -36,28 +51,6 @@ class EditQuanLyNguoiDung extends EditRecord
                     'nguoi_cap_nhat' => Auth::id(),
                 ]);
             }
-        }
-
-        // Xử lý đơn vị - Sử dụng updateOrCreate thay vì create
-        if (!empty($this->data['don_vi_ids'])) {
-            // Xóa tất cả liên kết hiện tại
-            $user->lnkNguoiDungDonVis()->delete();
-
-            // Tạo lại các liên kết mới
-            foreach ($this->data['don_vi_ids'] as $donViId) {
-                $user->lnkNguoiDungDonVis()->updateOrCreate(
-                    [
-                        'nguoi_dung_id' => $user->id,
-                        'don_vi_id' => $donViId,
-                    ],
-                    [
-                        'nguoi_tao' => Auth::id(),
-                        'nguoi_cap_nhat' => Auth::id(),
-                    ]
-                );
-            }
-        } else {
-            $user->lnkNguoiDungDonVis()->delete();
         }
     }
 

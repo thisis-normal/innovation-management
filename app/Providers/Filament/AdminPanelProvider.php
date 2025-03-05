@@ -24,6 +24,8 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Filament\Navigation\MenuItem;
 use App\Filament\Resources\UserResource;
+use Filament\Support\Assets\Css;
+use Filament\Support\Assets\Theme;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -84,7 +86,10 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
-            ->plugin(ThemesPlugin::make());
+            ->plugin(ThemesPlugin::make())
+            ->assets([
+                Css::make('custom-styles', resource_path('css/custom.css')),
+            ]);
     }
 
     /**

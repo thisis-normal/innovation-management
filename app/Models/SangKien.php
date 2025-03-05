@@ -21,12 +21,27 @@ class SangKien extends Model
         'ma_trang_thai_sang_kien',
         'truoc_khi_ap_dung',
         'sau_khi_ap_dung',
-        'ghi_chu'
+        'ghi_chu',
+        'loai_sang_kien_id',
     ];
 
     protected $casts = [
         'files' => 'array',
     ];
+
+    // Thêm method mới để kiểm tra trạng thái có thể edit hay không
+    public function canEdit(): bool
+    {
+        $editableStatuses = [
+            'draft',
+            'rejected_manager',
+            'rejected_secretary',
+            'rejected_council'
+        ];
+
+        return in_array($this->trangThaiSangKien->ma_trang_thai, $editableStatuses);
+    }
+
     // Relationships
     public function donVi(): BelongsTo
     {
@@ -51,5 +66,9 @@ class SangKien extends Model
     public function trangThaiSangKien(): BelongsTo
     {
         return $this->belongsTo(TrangThaiSangKien::class, 'ma_trang_thai_sang_kien', 'id');
+    }
+    public function loaiSangKien()
+    {
+        return $this->belongsTo(LoaiSangKien::class, 'loai_sang_kien_id');
     }
 }

@@ -24,6 +24,7 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Filament\Navigation\MenuItem;
 use App\Filament\User\Resources\UserResource;
+use Filament\Support\Assets\Css;
 
 class UserPanelProvider extends PanelProvider
 {
@@ -89,6 +90,9 @@ class UserPanelProvider extends PanelProvider
                     ->label('Đăng xuất')
                     ->url('/logout')
                     ->icon('heroicon-o-arrow-left-on-rectangle'),
+            ])
+            ->assets([
+                Css::make('custom-styles', resource_path('css/custom.css')),
             ]);
     }
     /**

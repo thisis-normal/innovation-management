@@ -24,7 +24,7 @@ class QuanLyDonViResource extends Resource
     protected static ?string $modelLabel = 'Quản lý đơn vị';
     protected static ?string $pluralModelLabel = 'Quản lý đơn vị';
     protected static ?string $slug = 'quan-ly-don-vi';
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 4;
     public static function form(Form $form): Form
     {
         return $form
@@ -118,7 +118,7 @@ class QuanLyDonViResource extends Resource
                 ]),
             ])
             ->paginated([
-                'reorderRecordsTriggerAction' => false,
+                5, 10, 25, 50, 'all'
             ])
             ->searchable();
     }

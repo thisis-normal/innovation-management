@@ -53,7 +53,7 @@ class QuanLyNguoiDungResource extends Resource
                             ->revealable()
                             ->dehydrateStateUsing(function ($state) {
                                 if (empty($state)) {
-                                    return null; // Trả về null nếu password trống
+                                    return null;
                                 }
                                 return Hash::make($state);
                             })
@@ -73,8 +73,32 @@ class QuanLyNguoiDungResource extends Resource
                             ->searchable()
                             ->enableBranchNode()
                             ->defaultOpenLevel(2)
-                            ->saveRelationshipsUsing(function (User $record, array $state) {
-                                $record->syncDonVis($state);
+                            ->saveRelationshipsUsing(function ($record, $state) {
+                                if (empty($state)) {
+                                    $record->lnkNguoiDungDonVis()->delete();
+                                    return;
+                                }
+
+                                // Lấy danh sách đơn vị hiện tại
+                                $currentDonViIds = $record->lnkNguoiDungDonVis()
+                                    ->pluck('don_vi_id')
+                                    ->toArray();
+
+                                // Xóa những liên kết không còn trong danh sách mới
+                                $record->lnkNguoiDungDonVis()
+                                    ->whereNotIn('don_vi_id', $state)
+                                    ->delete();
+
+                                // Thêm mới những liên kết chưa tồn tại
+                                foreach ($state as $donViId) {
+                                    if (!in_array($donViId, $currentDonViIds)) {
+                                        $record->lnkNguoiDungDonVis()->create([
+                                            'don_vi_id' => $donViId,
+                                            'nguoi_tao' => Auth::id(),
+                                            'nguoi_cap_nhat' => Auth::id(),
+                                        ]);
+                                    }
+                                }
                             })
                             ->rules([
                                 function() {
@@ -174,7 +198,7 @@ class QuanLyNguoiDungResource extends Resource
                 ]),
             ])
             ->paginated([
-                'reorderRecordsTriggerAction' => false,
+                5, 10, 25, 50, 'all'
             ])
             ->searchable();
     }

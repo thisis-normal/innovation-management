@@ -51,7 +51,7 @@ class CreateQuanLyNguoiDung extends CreateRecord
             }
         }
 
-        // Xử lý đơn vị - Sử dụng updateOrCreate thay vì create
+        // Xử lý đơn vị - Sử dụng updateOrCreate để tránh trùng lặp
         if (!empty($this->data['don_vi_ids'])) {
             foreach ($this->data['don_vi_ids'] as $donViId) {
                 $user->lnkNguoiDungDonVis()->updateOrCreate(
@@ -66,5 +66,10 @@ class CreateQuanLyNguoiDung extends CreateRecord
                 );
             }
         }
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('edit', ['record' => $this->record]);
     }
 }

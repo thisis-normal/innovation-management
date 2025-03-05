@@ -1,4 +1,4 @@
-<div class="filament-footer fixed bottom-0 left-0 right-0 w-full bg-white dark:bg-gray-800 border-t dark:border-gray-700 p-4">
+<div class="filament-footer w-full bg-white dark:bg-gray-800 border-t dark:border-gray-700 p-4 mt-auto sticky bottom-0">
     <div class="flex items-center justify-between">
         <div class="flex items-center space-x-4">
             <p class="text-gray-600 dark:text-gray-400">
@@ -13,3 +13,6 @@
         </p>
     </div>
 </div>
+
+<!-- Thêm padding bottom để tránh nội dung bị che bởi fixed footer -->
+<div class="pb-16"></div>

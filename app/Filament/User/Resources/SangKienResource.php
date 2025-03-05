@@ -6,12 +6,14 @@ use App\Filament\User\Resources\SangKienResource\Pages;
 use App\Models\SangKien;
 use App\Models\TaiLieuSangKien;
 use App\Models\TrangThaiSangKien;
+use App\Models\LoaiSangKien;
 use Exception;
 use Filament\Forms;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
@@ -89,6 +91,22 @@ class SangKienResource extends Resource
                     ]),
                 Hidden::make('ma_tac_gia')->default(Auth::id()),
                 Hidden::make('ma_don_vi')->default(Auth::user()->ma_don_vi),
+                Select::make('loai_sang_kien_id')
+                    ->label('Loại sáng kiến')
+                    ->relationship('loaiSangKien', 'ten_loai_sang_kien')
+                    ->required()
+                    ->preload()
+                    ->searchable()
+                    ->createOptionForm([
+                        Forms\Components\TextInput::make('ten_loai_sang_kien')
+                            ->label('Tên loại sáng kiến')
+                            ->required()
+                            ->maxLength(255),
+                        Forms\Components\Textarea::make('mo_ta')
+                            ->label('Mô tả')
+                            ->maxLength(65535),
+                    ])
+                    ->native(false),
             ]);
     }
 
@@ -123,7 +141,10 @@ class SangKienResource extends Resource
                     ->limit(50)
                     ->state(fn ($record) => strip_tags($record->sau_khi_ap_dung)),
                 TextColumn::make('user.name')->label('Tác giả')->searchable()->sortable(),
-
+                TextColumn::make('loaiSangKien.ten_loai_sang_kien')
+                    ->label('Loại sáng kiến')
+                    ->searchable()
+                    ->sortable(),
                 TextColumn::make('taiLieuSangKien.file_path')
                     ->label('File đính kèm')
                     ->limit(20)
@@ -158,7 +179,15 @@ class SangKienResource extends Resource
                     ->query(fn (Builder $query, $value) => $query->where('title', 'like', "%$value%")),
             ])
             ->actions([
-                Tables\Actions\EditAction::make()->label('Chỉnh sửa')->visible(fn ($record) => $record->trangThaiSangKien->ma_trang_thai == 'draft'),
+                Tables\Actions\EditAction::make()
+                    ->label('Chỉnh sửa')
+                    ->visible(fn ($record) => $record->canEdit())
+                    ->successNotification(
+                        Notification::make()
+                            ->success()
+                            ->title('Đã lưu thành công')
+                            ->body('Sáng kiến đã được cập nhật và chuyển về trạng thái bản nháp.')
+                    ),
                 Tables\Actions\DeleteAction::make()->label('Xóa'),
                 Action::make('Download')
                     ->label('Tải xuống')

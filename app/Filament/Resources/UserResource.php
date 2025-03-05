@@ -64,6 +64,15 @@ class UserResource extends Resource
             ->filters([])
             ->actions([
                 Tables\Actions\EditAction::make(),
+            ])
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->label('Xóa các mục đã chọn'),
+                ]),
+            ])
+            ->paginated([
+                5, 10, 25, 50, 'all'
             ]);
     }
 
