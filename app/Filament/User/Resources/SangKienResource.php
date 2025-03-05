@@ -89,8 +89,6 @@ class SangKienResource extends Resource
                         'files.acceptedFileTypes' => 'Chỉ chấp nhận các loại file: DOC, DOCX, PDF, XLS, XLSX.',
                         'files.maxSize' => 'Dung lượng tối đa 50MB/file.',
                     ]),
-                Hidden::make('ma_tac_gia')->default(Auth::id()),
-                Hidden::make('ma_don_vi')->default(Auth::user()->ma_don_vi),
                 Select::make('loai_sang_kien_id')
                     ->label('Loại sáng kiến')
                     ->relationship('loaiSangKien', 'ten_loai_sang_kien')
@@ -107,6 +105,9 @@ class SangKienResource extends Resource
                             ->maxLength(65535),
                     ])
                     ->native(false),
+                Hidden::make('ma_tac_gia')->default(Auth::id()),
+                Hidden::make('ma_don_vi')->default(Auth::user()->ma_don_vi),
+                Hidden::make('ma_trang_thai_sang_kien')->default(TrangThaiSangKien::query()->where('ma_trang_thai', 'draft')->first()->id),
             ]);
     }
 
