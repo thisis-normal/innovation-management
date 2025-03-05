@@ -16,11 +16,12 @@ class SangKien extends Model
     protected $fillable = [
         'ten_sang_kien',
         'mo_ta',
+        'truoc_khi_ap_dung',
+        'sau_khi_ap_dung',
         'ma_tac_gia',
         'ma_don_vi',
         'ma_trang_thai_sang_kien',
-        'truoc_khi_ap_dung',
-        'sau_khi_ap_dung',
+        'ma_hoi_dong',
         'ghi_chu',
         'loai_sang_kien_id',
     ];
@@ -70,5 +71,9 @@ class SangKien extends Model
     public function loaiSangKien()
     {
         return $this->belongsTo(LoaiSangKien::class, 'loai_sang_kien_id');
+    }
+    public function hoiDongThamDinh(): BelongsTo
+    {
+        return $this->belongsTo(HoiDongThamDinh::class, 'ma_hoi_dong');
     }
 }

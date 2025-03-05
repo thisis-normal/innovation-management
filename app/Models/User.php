@@ -84,9 +84,23 @@ class User extends Authenticatable implements FilamentUser
         'email_verified_at' => 'datetime',
     ];
 
+    // Quan hệ với HoiDongThamDinh (là trưởng hội đồng)
+    public function hoiDongLamTruong(): HasMany
+    {
+        return $this->hasMany(HoiDongThamDinh::class, 'ma_truong_hoi_dong');
+    }
+
+    // Quan hệ với ThanhVienHoiDong
     public function thanhVienHoiDongs(): HasMany
     {
-        return $this->hasMany(ThanhVienHoiDong::class, 'ma_nguoi_dung', 'id');
+        return $this->hasMany(ThanhVienHoiDong::class, 'ma_nguoi_dung');
+    }
+
+    // Quan hệ với HoiDongThamDinh thông qua ThanhVienHoiDong
+    public function hoiDongs(): BelongsToMany
+    {
+        return $this->belongsToMany(HoiDongThamDinh::class, 'thanh_vien_hoi_dong', 'ma_nguoi_dung', 'ma_hoi_dong')
+                    ->withTimestamps();
     }
 
     public function lnkNguoiDungDonVis()

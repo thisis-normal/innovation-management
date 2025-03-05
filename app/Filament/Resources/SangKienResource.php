@@ -20,7 +20,7 @@ class SangKienResource extends Resource
     protected static ?string $modelLabel = 'Sáng kiến';
     protected static ?string $pluralModelLabel = 'Sáng kiến';
     protected static ?string $navigationLabel = 'Quản lý sáng kiến';
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 5;
 
     public static function form(Form $form): Form
     {

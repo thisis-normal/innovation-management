@@ -22,7 +22,7 @@ class QuanLyLoaiSangKienResource extends Resource
     protected static ?string $modelLabel = 'Loại sáng kiến';
     protected static ?string $pluralModelLabel = 'Loại sáng kiến';
     protected static ?string $navigationLabel = 'Quản lý loại sáng kiến';
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 6;
 
     public static function form(Form $form): Form
     {

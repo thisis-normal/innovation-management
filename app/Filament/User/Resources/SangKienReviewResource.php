@@ -15,6 +15,8 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
+use App\Models\HoiDongThamDinh;
+use Filament\Forms\Components\Select;
 
 class SangKienReviewResource extends Resource
 {
@@ -133,52 +135,79 @@ class SangKienReviewResource extends Resource
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->modalHeading(fn (SangKien $record) => 'Phê duyệt sáng kiến: ' . $record->ten_sang_kien)
-                    ->modalDescription('Vui lòng xác nhận việc phê duyệt sáng kiến này.')
-                    ->form([
-                        Forms\Components\Textarea::make('note')
-                            ->label('Ghi chú (không bắt buộc)')
-                            ->placeholder('Nhập ghi chú của bạn ở đây...')
-                            ->maxLength(1000),
-                    ])
+                    ->modalDescription(function () {
+                        if (auth()->user()->hasRole('secretary')) {
+                            return 'Vui lòng chọn hội đồng thẩm định và xác nhận việc phê duyệt sáng kiến này.';
+                        }
+                        return 'Vui lòng xác nhận việc phê duyệt sáng kiến này.';
+                    })
+                    ->form(function () {
+                        $formFields = [
+                            Forms\Components\Textarea::make('note')
+                                ->label('Ghi chú (không bắt buộc)')
+                                ->placeholder('Nhập ghi chú của bạn ở đây...')
+                                ->maxLength(1000),
+                        ];
+
+                        // Chỉ hiển thị select hội đồng khi người dùng là thư ký
+                        if (auth()->user()->hasRole('secretary')) {
+                            array_unshift($formFields,
+                                Select::make('hoi_dong_id')
+                                    ->label('Chọn Hội đồng thẩm định')
+                                    ->options(function () {
+                                        return HoiDongThamDinh::where('trang_thai', true)
+                                            ->get()
+                                            ->pluck('ten_hoi_dong', 'id');
+                                    })
+                                    ->searchable()
+                                    ->preload()
+                                    ->required()
+                                    ->helperText('Chọn hội đồng sẽ thẩm định sáng kiến này')
+                            );
+                        }
+
+                        return $formFields;
+                    })
                     ->action(function (SangKien $record, array $data) {
                         // Store the note if provided
                         if (!empty($data['note'])) {
                             $record->ghi_chu = $data['note'];
                         }
+
                         // Get the current status of the record
                         $currentStatus = $record->ma_trang_thai_sang_kien;
-
-                        // Update status based on current user role
                         $user = auth()->user();
-                        $pendingSecretaryId = TrangThaiSangKien::query()->where('ma_trang_thai', 'pending_secretary')->first()->id;
-                        $pendingManagerId = TrangThaiSangKien::query()->where('ma_trang_thai', 'pending_manager')->first()->id;
-                        $reviewingId = TrangThaiSangKien::query()->where('ma_trang_thai', 'Reviewing')->first()->id;
+
+                        $pendingSecretaryId = TrangThaiSangKien::query()
+                            ->where('ma_trang_thai', 'pending_secretary')
+                            ->first()->id;
+                        $pendingManagerId = TrangThaiSangKien::query()
+                            ->where('ma_trang_thai', 'pending_manager')
+                            ->first()->id;
+                        $reviewingId = TrangThaiSangKien::query()
+                            ->where('ma_trang_thai', 'Reviewing')
+                            ->first()->id;
 
                         if ($user->hasRole('manager') && $currentStatus === $pendingManagerId) {
-                            // If the user is a manager and the current status is pending_manager, update to pending_secretary
                             $record->ma_trang_thai_sang_kien = $pendingSecretaryId;
                         } elseif ($user->hasRole('secretary') && $currentStatus === $pendingSecretaryId) {
-                            // If the user is a secretary and the current status is pending_secretary, update to Reviewing
+                            // Nếu là thư ký, cập nhật hội đồng và trạng thái
                             $record->ma_trang_thai_sang_kien = $reviewingId;
+                            $record->ma_hoi_dong = $data['hoi_dong_id']; // Lưu ID hội đồng được chọn
                         }
 
-                        // Save the record if there was any change
-                        if ($record->isDirty('ma_trang_thai_sang_kien')) {
-                            $record->save();
-                        }
+                        $record->save();
+
+                        $message = $user->hasRole('secretary')
+                            ? 'Sáng kiến đã được phê duyệt và chuyển đến hội đồng thẩm định'
+                            : 'Sáng kiến đã được phê duyệt';
 
                         Notification::make()
-                            ->title('Sáng kiến đã được phê duyệt')
+                            ->title($message)
                             ->success()
                             ->send();
                     })
-                    ->visible(function () {
-                        // Only show for appropriate role and status
-                        if (auth()->user()->hasRole('manager') || auth()->user()->hasRole('secretary')) {
-                            return true;
-                        }
-                        return false;
-                    }),
+                    ->visible(fn () => auth()->user()->hasRole('manager') || auth()->user()->hasRole('secretary')),
 
                 Tables\Actions\Action::make('reject')
                     ->label('Từ chối')
