@@ -4,6 +4,7 @@ namespace App\Filament\User\Resources\SangKienResource\Pages;
 
 use App\Filament\User\Resources\SangKienResource;
 use App\Models\TaiLieuSangKien;
+use App\Models\TrangThaiSangKien;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 
@@ -21,6 +22,16 @@ class EditSangKien extends EditRecord
     {
         // Remove 'files' so it is not stored in the main table
         unset($data['files']);
+
+        // Lấy ID của trạng thái draft
+        $draftStatusId = TrangThaiSangKien::query()
+            ->where('ma_trang_thai', 'draft')
+            ->first()
+            ->id;
+
+        // Set trạng thái về draft
+        $data['ma_trang_thai_sang_kien'] = $draftStatusId;
+
         return $data;
     }
 

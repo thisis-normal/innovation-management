@@ -23,6 +23,8 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Filament\Navigation\MenuItem;
+use App\Filament\Resources\UserResource;
+use Filament\Support\Assets\Css;
 
 class UserPanelProvider extends PanelProvider
 {
@@ -48,6 +50,9 @@ class UserPanelProvider extends PanelProvider
             ->pages([
                 Pages\Dashboard::class,
             ])
+            ->resources([
+                UserResource::class,
+            ])
             ->discoverWidgets(in: app_path('Filament/User/Widgets'), for: 'App\\Filament\\User\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
@@ -71,14 +76,14 @@ class UserPanelProvider extends PanelProvider
             ])
             ->plugin(ThemesPlugin::make())
             ->sidebarCollapsibleOnDesktop()
-//            ->renderHook(
-//                'panels::footer',
-//                fn () => view('custom-footer')
-//            )
+            ->renderHook(
+                'panels::footer',
+                fn () => view('custom-footer')
+            )
             ->userMenuItems([
-//                'profile' => MenuItem::make()
-//                    ->label('Chỉnh sửa thông tin')
-//                    ->url(fn () => UserResource::getUrl('edit', ['record' => filament()->auth()->user()?->id])),
+                'profile' => MenuItem::make()
+                    ->label('Chỉnh sửa thông tin')
+                    ->url(fn () => UserResource::getUrl('edit', ['record' => filament()->auth()->user()?->id])),
                 'admin' => MenuItem::make()
                     ->label('Trang quản trị')
                     ->url('/admin')
@@ -88,6 +93,9 @@ class UserPanelProvider extends PanelProvider
                     ->label('Đăng xuất')
                     ->url('/logout')
                     ->icon('heroicon-o-arrow-left-on-rectangle'),
+            ])
+            ->assets([
+                Css::make('custom-styles', resource_path('css/custom.css')),
             ]);
     }
     /**

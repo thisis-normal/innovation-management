@@ -111,7 +111,7 @@ class QuanLyVaiTroResource extends Resource
                 ]),
             ])
             ->paginated([
-                'reorderRecordsTriggerAction' => false,
+                5, 10, 25, 50, 'all'
             ])
             ->searchable();
     }

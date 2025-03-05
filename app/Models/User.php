@@ -14,8 +14,10 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Traits\HasCustomRelations;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 /**
+ * @property integer $id
  * @property Collection|VaiTro[] $roles
  * @property Collection|DonVi[] $ma_don_vi
  */
@@ -54,7 +56,12 @@ class User extends Authenticatable implements FilamentUser
     public function canAccessPanel(Panel $panel): bool
     {
         if ($panel->getId() === 'admin') {
-            return $this->hasRole('admin');
+            // Kiểm tra qua vai trò của người dùng
+            return $this->lnkNguoiDungVaiTros()
+                ->whereHas('vaiTro', function ($query) {
+                    $query->where('ma_vai_tro', 'admin');
+                })
+                ->exists();
         }
         return true;
     }
@@ -78,14 +85,28 @@ class User extends Authenticatable implements FilamentUser
         'email_verified_at' => 'datetime',
     ];
 
-    public function thanhVienHoiDongs(): HasMany
+    // Quan hệ với HoiDongThamDinh (là trưởng hội đồng)
+    public function hoiDongLamTruong(): HasMany
     {
-        return $this->hasMany(ThanhVienHoiDong::class, 'ma_nguoi_dung', 'id');
+        return $this->hasMany(HoiDongThamDinh::class, 'ma_truong_hoi_dong');
     }
 
-    public function lnkNguoiDungDonVis(): HasMany
+    // Quan hệ với ThanhVienHoiDong
+    public function thanhVienHoiDongs(): HasMany
     {
-        return $this->hasMany(LnkNguoiDungDonVi::class, 'nguoi_dung_id', 'id');
+        return $this->hasMany(ThanhVienHoiDong::class, 'ma_nguoi_dung');
+    }
+
+    // Quan hệ với HoiDongThamDinh thông qua ThanhVienHoiDong
+    public function hoiDongs(): BelongsToMany
+    {
+        return $this->belongsToMany(HoiDongThamDinh::class, 'thanh_vien_hoi_dong', 'ma_nguoi_dung', 'ma_hoi_dong')
+                    ->withTimestamps();
+    }
+
+    public function lnkNguoiDungDonVis()
+    {
+        return $this->hasMany(LnkNguoiDungDonVi::class, 'nguoi_dung_id');
     }
 
     public function lnkNguoiDungVaiTros(): HasMany
@@ -95,22 +116,32 @@ class User extends Authenticatable implements FilamentUser
 
     public function roles(): BelongsToMany
     {
-        return $this->belongsToMany(VaiTro::class, 'lnk_nguoi_dung_vai_tro', 'nguoi_dung_id', 'vai_tro_id');
+        return $this->belongsToMany(VaiTro::class, 'lnk_nguoi_dung_vai_tro', 'nguoi_dung_id', 'vai_tro_id')
+            ->withPivot(['nguoi_tao', 'nguoi_cap_nhat'])
+            ->withTimestamps();
     }
     public function hasRole($roles): bool
     {
         if (is_string($roles)) {
-            return $this->roles()->where('ma_vai_tro', $roles)->exists();
+            return $this->lnkNguoiDungVaiTros()
+                ->whereHas('vaiTro', function ($query) use ($roles) {
+                    $query->where('ma_vai_tro', $roles);
+                })
+                ->exists();
         }
 
         if (is_array($roles)) {
-            return $this->roles()->whereIn('ma_vai_tro', $roles)->exists();
+            return $this->lnkNguoiDungVaiTros()
+                ->whereHas('vaiTro', function ($query) use ($roles) {
+                    $query->whereIn('ma_vai_tro', $roles);
+                })
+                ->exists();
         }
 
-        return false; // Return false for invalid input
+        return false;
     }
 
-    public function donVis(): BelongsToMany
+    public function donVis()
     {
         return $this->belongsToMany(DonVi::class, 'lnk_nguoi_dung_don_vi', 'nguoi_dung_id', 'don_vi_id')
             ->withPivot(['nguoi_tao', 'nguoi_cap_nhat'])

@@ -15,9 +15,7 @@ class LnkNguoiDungDonVi extends Model
         'nguoi_dung_id',
         'don_vi_id',
         'nguoi_tao',
-        'nguoi_cap_nhat',
-        'created_at',
-        'updated_at'
+        'nguoi_cap_nhat'
     ];
 
     public function nguoiDung()

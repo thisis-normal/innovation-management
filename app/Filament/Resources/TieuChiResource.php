@@ -20,7 +20,7 @@ class TieuChiResource extends Resource
     protected static ?string $modelLabel = 'Tiêu chí chấm điểm';
     protected static ?string $pluralModelLabel = 'Tiêu chí chấm điểm';
     protected static ?string $slug = 'tieu-chi';
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 5;
     public static function form(Form $form): Form
     {
         return $form
@@ -97,7 +97,7 @@ class TieuChiResource extends Resource
                 ]),
             ])
             ->paginated([
-                'reorderRecordsTriggerAction' => false,
+                5, 10, 25, 50, 'all'
             ])
             ->searchable();
     }

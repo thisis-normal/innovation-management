@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ThanhVienHoiDong extends Model
 {
@@ -13,20 +15,23 @@ class ThanhVienHoiDong extends Model
 
     protected $fillable = [
         'ma_hoi_dong',
-        'ma_nguoi_dung'
+        'ma_nguoi_dung',
     ];
 
-    public function hoiDong()
+    // Quan hệ với HoiDongThamDinh
+    public function hoiDong(): BelongsTo
     {
         return $this->belongsTo(HoiDongThamDinh::class, 'ma_hoi_dong');
     }
 
-    public function nguoiDung()
+    // Quan hệ với User
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'ma_nguoi_dung');
     }
 
-    public function diemCaNhans()
+    // Quan hệ với DiemCaNhan
+    public function diemCaNhans(): HasMany
     {
         return $this->hasMany(DiemCaNhan::class, 'ma_thanh_vien');
     }

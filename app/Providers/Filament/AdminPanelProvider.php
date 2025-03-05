@@ -23,6 +23,9 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Filament\Navigation\MenuItem;
+use App\Filament\Resources\UserResource;
+use Filament\Support\Assets\Css;
+use Filament\Support\Assets\Theme;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -56,9 +59,9 @@ class AdminPanelProvider extends PanelProvider
                 Widgets\FilamentInfoWidget::class,
             ])
             ->userMenuItems([
-//                'profile' => MenuItem::make()
-//                    ->label('Chỉnh sửa thông tin')
-//                    ->url(fn () => UserResource::getUrl('edit', ['record' => filament()->auth()->user()?->id])),
+                'profile' => MenuItem::make()
+                    ->label('Chỉnh sửa thông tin')
+                    ->url(fn () => UserResource::getUrl('edit', ['record' => filament()->auth()->user()?->id])),
                 'user' => MenuItem::make()
                     ->label('Trang người dùng')
                     ->url('/user')
@@ -83,7 +86,10 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
-            ->plugin(ThemesPlugin::make());
+            ->plugin(ThemesPlugin::make())
+            ->assets([
+                Css::make('custom-styles', resource_path('css/custom.css')),
+            ]);
     }
 
     /**
