@@ -27,10 +27,9 @@ class EditUser extends EditRecord
     public function mount($record): void
     {
         parent::mount($record);
-
         $currentUser = Auth::user();
         $currentPanelId = Filament::getCurrentPanel()->getId();
-        if ($currentPanelId === 'user' && !$currentUser->hasRole('admin') && $this->record->id !== $currentUser->id) {
+        if ($currentPanelId === 'user' && $this->record->id !== $currentUser->id) {
             Notification::make()
                 ->title('Cảnh báo!')
                 ->body('Bạn không được phép chỉnh sửa thông tin người dùng khác trong trang này.')
