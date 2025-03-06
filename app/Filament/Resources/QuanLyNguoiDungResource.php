@@ -23,7 +23,7 @@ class QuanLyNguoiDungResource extends Resource
 {
     protected static ?string $model = User::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-user-group';
+    protected static ?string $navigationIcon = 'heroicon-o-user-plus';
     protected static ?string $navigationLabel = 'Quản lý người dùng';
     protected static ?string $modelLabel = 'Quản lý người dùng';
     protected static ?string $pluralModelLabel = 'Quản lý người dùng';

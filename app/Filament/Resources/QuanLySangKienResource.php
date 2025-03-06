@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\SangKienResource\Pages;
+use App\Filament\Resources\QuanLySangKienResource\Pages;
 use App\Models\SangKien;
 use App\Models\LoaiSangKien;
 use Filament\Forms;
@@ -12,7 +12,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
-class SangKienResource extends Resource
+class QuanLySangKienResource extends Resource
 {
     protected static ?string $model = SangKien::class;
 
@@ -114,9 +114,9 @@ class SangKienResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListSangKiens::route('/'),
-            'create' => Pages\CreateSangKien::route('/create'),
-            'edit' => Pages\EditSangKien::route('/{record}/edit'),
+            'index' => Pages\ListQuanLySangKiens::route('/'),
+            'create' => Pages\CreateQuanLySangKien::route('/create'),
+            'edit' => Pages\EditQuanLySangKien::route('/{record}/edit'),
         ];
     }
 }

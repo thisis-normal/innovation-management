@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Filament\Resources\SangKienResource\Pages;
+namespace App\Filament\Resources\QuanLySangKienResource\Pages;
 
-use App\Filament\Resources\SangKienResource;
+use App\Filament\Resources\QuanLySangKienResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 
-class EditSangKien extends EditRecord
+class EditQuanLySangKien extends EditRecord
 {
-    protected static string $resource = SangKienResource::class;
+    protected static string $resource = QuanLySangKienResource::class;
 
     protected function getHeaderActions(): array
     {
