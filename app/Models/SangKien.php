@@ -23,7 +23,7 @@ class SangKien extends Model
         'ma_trang_thai_sang_kien',
         'ma_hoi_dong',
         'ghi_chu',
-        'loai_sang_kien_id',
+        'ma_loai_sang_kien',
     ];
 
     protected $casts = [
@@ -70,7 +70,7 @@ class SangKien extends Model
     }
     public function loaiSangKien()
     {
-        return $this->belongsTo(LoaiSangKien::class, 'loai_sang_kien_id');
+        return $this->belongsTo(LoaiSangKien::class, 'ma_loai_sang_kien');
     }
     public function hoiDongThamDinh(): BelongsTo
     {

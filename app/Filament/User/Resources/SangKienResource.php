@@ -89,7 +89,7 @@ class SangKienResource extends Resource
                         'files.acceptedFileTypes' => 'Chỉ chấp nhận các loại file: DOC, DOCX, PDF, XLS, XLSX.',
                         'files.maxSize' => 'Dung lượng tối đa 50MB/file.',
                     ]),
-                Select::make('loai_sang_kien_id')
+                Select::make('ma_loai_sang_kien')
                     ->label('Loại sáng kiến')
                     ->relationship('loaiSangKien', 'ten_loai_sang_kien')
                     ->required()
@@ -182,13 +182,7 @@ class SangKienResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make()
                     ->label('Chỉnh sửa')
-                    ->visible(fn ($record) => $record->canEdit())
-                    ->successNotification(
-                        Notification::make()
-                            ->success()
-                            ->title('Đã lưu thành công')
-                            ->body('Sáng kiến đã được cập nhật và chuyển về trạng thái bản nháp.')
-                    ),
+                    ->visible(fn ($record) => $record->canEdit()),
                 Tables\Actions\DeleteAction::make()->label('Xóa'),
                 Action::make('Download')
                     ->label('Tải xuống')

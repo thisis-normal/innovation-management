@@ -41,6 +41,12 @@ class BaoCaoResource extends Resource
     protected static ?string $slug = 'bao-cao';
     protected static ?int $navigationSort = 3;
 
+    // This resource is only accessible for council members.
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->hasRole(['secretary']);
+    }
+
     public static function form(Form $form): Form
     {
         return $form

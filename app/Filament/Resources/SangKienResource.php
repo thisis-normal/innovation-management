@@ -30,7 +30,7 @@ class SangKienResource extends Resource
                     ->label('Tên sáng kiến')
                     ->required()
                     ->columnSpan('full'),
-                Forms\Components\Select::make('loai_sang_kien_id')
+                Forms\Components\Select::make('ma_loai_sang_kien')
                     ->label('Loại sáng kiến')
                     ->relationship('loaiSangKien', 'ten_loai_sang_kien')
                     ->required()
