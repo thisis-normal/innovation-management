@@ -164,12 +164,12 @@ class SangKienResource extends Resource
                     ->badge()
                     ->color(fn ($record) => match ($record->trangThaiSangKien->ma_trang_thai) {
                         'draft' => 'gray', // Neutral gray for drafts
-                        'pending_manager', 'pending_secretary' => 'amber', // Amber (yellow-orange) for pending actions
-                        'Checking' => 'calm-blue', // Calm blue for checking
-                        'Reviewing' => 'indigo', // Indigo for reviewing
-                        'Scoring1' => 'lime', // Bright lime green for initial scoring
-                        'Scoring2' => 'emerald', // Rich emerald green for secondary scoring
-                        'Approved' => 'green', // Vibrant green for approved items
+                        'pending_manager', 'pending_secretary', 'pending_council' => 'amber', // Amber (yellow-orange) for pending actions
+                        'scoring1' => 'calm-blue', // Calm blue for checking
+                        'scoring2' => 'indigo', // Indigo for reviewing
+//                        'Scoring1' => 'lime', // Bright lime green for initial scoring
+//                        'Scoring2' => 'emerald', // Rich emerald green for secondary scoring
+                        'approved' => 'green', // Vibrant green for approved items
                         default => 'red', // Bold red for rejected or unknown states
                     }),
                 TextColumn::make('ghi_chu')->label('Ghi chú')
