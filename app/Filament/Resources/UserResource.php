@@ -32,7 +32,7 @@ class UserResource extends Resource
                 Forms\Components\TextInput::make('email')
                     ->label('Email')
                     ->email()
-                    ->required()
+                    ->disabled()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('password')
                     ->label('Mật khẩu mới')
