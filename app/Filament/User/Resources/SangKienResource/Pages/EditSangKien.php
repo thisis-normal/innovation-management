@@ -6,7 +6,9 @@ use App\Filament\User\Resources\SangKienResource;
 use App\Models\TaiLieuSangKien;
 use App\Models\TrangThaiSangKien;
 use Filament\Actions;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Support\Facades\Auth;
 
 class EditSangKien extends EditRecord
 {
@@ -17,6 +19,21 @@ class EditSangKien extends EditRecord
         return [
             Actions\DeleteAction::make(),
         ];
+    }
+    public function mount($record): void
+    {
+        parent::mount($record);
+
+        $user = Auth::user();
+        // Check if the innovation's status is pending (pending_secretary)
+        if ($this->record->trangThaiSangKien->ma_trang_thai === 'pending_secretary'
+            && $this->record->ma_tac_gia === $user->id) {
+            Notification::make()
+                ->title('Không thể chỉnh sửa sáng kiến trong trạng thái này')
+                ->warning()
+                ->send();
+            $this->redirect(SangKienResource::getUrl('index'));
+        }
     }
     protected function mutateFormDataBeforeSave(array $data): array
     {
@@ -71,8 +88,12 @@ class EditSangKien extends EditRecord
         // Redirect to index page
         $this->redirect(SangKienResource::getUrl());
     }
-    protected function getSavedNotificationMessage(): ?string
+
+    /**
+     * Override the default updated notification title.
+     */
+    protected function getSavedNotificationTitle(): ?string
     {
-        return 'Cập nhật thành công';
+        return 'Sáng kiến đã được cập nhật và chuyển về trạng thái bản nháp.';
     }
 }

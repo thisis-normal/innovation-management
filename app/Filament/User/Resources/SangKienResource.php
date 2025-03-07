@@ -89,7 +89,7 @@ class SangKienResource extends Resource
                         'files.acceptedFileTypes' => 'Chỉ chấp nhận các loại file: DOC, DOCX, PDF, XLS, XLSX.',
                         'files.maxSize' => 'Dung lượng tối đa 50MB/file.',
                     ]),
-                Select::make('loai_sang_kien_id')
+                Select::make('ma_loai_sang_kien')
                     ->label('Loại sáng kiến')
                     ->relationship('loaiSangKien', 'ten_loai_sang_kien')
                     ->required()
@@ -164,12 +164,12 @@ class SangKienResource extends Resource
                     ->badge()
                     ->color(fn ($record) => match ($record->trangThaiSangKien->ma_trang_thai) {
                         'draft' => 'gray', // Neutral gray for drafts
-                        'pending_manager', 'pending_secretary' => 'amber', // Amber (yellow-orange) for pending actions
-                        'Checking' => 'calm-blue', // Calm blue for checking
-                        'Reviewing' => 'indigo', // Indigo for reviewing
-                        'Scoring1' => 'lime', // Bright lime green for initial scoring
-                        'Scoring2' => 'emerald', // Rich emerald green for secondary scoring
-                        'Approved' => 'green', // Vibrant green for approved items
+                        'pending_manager', 'pending_secretary', 'pending_council' => 'amber', // Amber (yellow-orange) for pending actions
+                        'scoring1' => 'calm-blue', // Calm blue for checking
+                        'scoring2' => 'indigo', // Indigo for reviewing
+//                        'Scoring1' => 'lime', // Bright lime green for initial scoring
+//                        'Scoring2' => 'emerald', // Rich emerald green for secondary scoring
+                        'approved' => 'green', // Vibrant green for approved items
                         default => 'red', // Bold red for rejected or unknown states
                     }),
                 TextColumn::make('ghi_chu')->label('Ghi chú')
@@ -182,13 +182,7 @@ class SangKienResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make()
                     ->label('Chỉnh sửa')
-                    ->visible(fn ($record) => $record->canEdit())
-                    ->successNotification(
-                        Notification::make()
-                            ->success()
-                            ->title('Đã lưu thành công')
-                            ->body('Sáng kiến đã được cập nhật và chuyển về trạng thái bản nháp.')
-                    ),
+                    ->visible(fn ($record) => $record->canEdit()),
                 Tables\Actions\DeleteAction::make()->label('Xóa'),
                 Action::make('Download')
                     ->label('Tải xuống')

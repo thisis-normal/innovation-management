@@ -23,10 +23,11 @@ class SangKienReviewResource extends Resource
     protected static ?string $model = SangKien::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-check-circle';
-    protected static ?string $navigationLabel = 'Xử lý sáng kiến';
-    protected static ?string $pluralModelLabel = 'Xử lý sáng kiến';
+    protected static ?string $navigationLabel = 'Phê duyệt sáng kiến';
+    protected static ?string $pluralModelLabel = 'Phê duyệt sáng kiến';
     protected static ?string $slug = 'duyet-sang-kien';
     protected static ?int $navigationSort = 2;
+    protected static ?string $navigationGroup = 'Xử lý sáng kiến';
     public static function getEloquentQuery(): Builder
     {
         $query = parent::getEloquentQuery();

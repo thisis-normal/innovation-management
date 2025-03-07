@@ -20,6 +20,7 @@ class QuanLyHoiDongResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
     protected static ?string $modelLabel = 'Hội Đồng';
+    protected static ?string $slug = 'quan-ly-hoi-dong';
     protected static ?string $pluralModelLabel = 'Hội Đồng';
     protected static ?string $navigationLabel = 'Quản lý Hội Đồng';
     protected static ?int $navigationSort = 3;
@@ -73,10 +74,6 @@ class QuanLyHoiDongResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id')
-                    ->label('ID')
-                    ->sortable(),
-
                 Tables\Columns\TextColumn::make('ten_hoi_dong')
                     ->label('Tên hội đồng')
                     ->searchable()
