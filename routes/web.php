@@ -46,7 +46,24 @@ Route::get('/mail-test', function () {
 
 Route::get('/logout', function () {
     Auth::logout();
+    session()->flush();
+    session()->regenerate();
     return redirect('/');
 })->name('logout');
+
+// Thêm route middleware để kiểm tra chuyển hướng sau khi đăng nhập
+Route::middleware(['auth'])->group(function () {
+    Route::get('/check-redirect', function () {
+        if (session()->has('redirect_to_panel')) {
+            $panel = session()->pull('redirect_to_panel');
+            if ($panel === 'user') {
+                return redirect('/user');
+            } elseif ($panel === 'admin') {
+                return redirect('/admin');
+            }
+        }
+        return redirect('/user'); // Mặc định chuyển hướng đến panel user
+    })->name('check.redirect');
+});
 
 require __DIR__.'/auth.php';

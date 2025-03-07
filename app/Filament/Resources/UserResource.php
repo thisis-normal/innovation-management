@@ -10,6 +10,8 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Hash;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Grid;
 
 class UserResource extends Resource
 {
@@ -34,21 +36,65 @@ class UserResource extends Resource
                     ->email()
                     ->disabled()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('password')
-                    ->label('Mật khẩu mới')
-                    ->password()
-                    ->revealable()
-                    ->dehydrateStateUsing(fn ($state) => filled($state) ? Hash::make($state) : null)
-                    ->dehydrated(fn ($state) => filled($state))
-                    ->required(fn (string $operation): bool => $operation === 'create')
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('password_confirmation')
-                    ->label('Xác nhận mật khẩu')
-                    ->password()
-                    ->revealable()
-                    ->required(fn ($get) => filled($get('password')))
-                    ->same('password')
-                    ->dehydrated(false),
+
+                // Wrap password fields in a Section
+                Section::make('Đổi mật khẩu')
+                    ->schema([
+                        Forms\Components\TextInput::make('current_password')
+                            ->label('Mật khẩu hiện tại')
+                            ->password()
+                            ->revealable()
+                            ->dehydrated(false)
+                            ->rules(['required_with:password'])
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(function ($state, $set, Forms\Get $get) {
+                                if (empty($state)) {
+                                    $set('password', null);
+                                    $set('password_confirmation', null);
+                                    return;
+                                }
+
+                                if (!Hash::check($state, auth()->user()->password)) {
+                                    $set('password', null);
+                                    $set('password_confirmation', null);
+                                    $set('current_password_valid', false);
+                                } else {
+                                    $set('current_password_valid', true);
+                                }
+                            })
+                            ->validationMessages([
+                                'required_with' => 'Vui lòng nhập mật khẩu hiện tại để đổi mật khẩu mới',
+                            ])
+                            ->suffixIcon(fn ($get) => $get('current_password') ?
+                                ($get('current_password_valid') ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle') : null)
+                            ->suffixIconColor(fn ($get) => $get('current_password_valid') ? 'success' : 'danger')
+                            ->helperText(fn ($get) => $get('current_password') && !$get('current_password_valid') ?
+                                'Mật khẩu hiện tại không đúng' : null)
+                            ->extraInputAttributes(fn ($get) => [
+                                'class' => $get('current_password') && !$get('current_password_valid') ? 'border-danger-600 ring-danger-600' : ''
+                            ]),
+
+                        Forms\Components\TextInput::make('password')
+                            ->label('Mật khẩu mới')
+                            ->password()
+                            ->revealable()
+                            ->disabled(fn ($get) => !$get('current_password') ||
+                                !Hash::check($get('current_password'), auth()->user()->password))
+                            ->dehydrateStateUsing(fn ($state) => filled($state) ? Hash::make($state) : null)
+                            ->dehydrated(fn ($state) => filled($state))
+                            ->maxLength(255),
+
+                        Forms\Components\TextInput::make('password_confirmation')
+                            ->label('Xác nhận mật khẩu')
+                            ->password()
+                            ->revealable()
+                            ->disabled(fn ($get) => !$get('current_password') ||
+                                !Hash::check($get('current_password'), auth()->user()->password))
+                            ->required(fn ($get) => filled($get('password')))
+                            ->same('password')
+                            ->dehydrated(false),
+                    ])
+                    ->columns(1),
             ]);
     }
 
