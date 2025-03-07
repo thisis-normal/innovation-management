@@ -6,6 +6,7 @@ use App\Filament\Resources\QuanLyHoiDongResource\Pages;
 use App\Filament\Resources\QuanLyHoiDongResource\RelationManagers\ThanhVienHoiDongsRelationManager;
 use App\Models\HoiDongThamDinh;
 use App\Models\User;
+use App\Models\DonVi;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -13,6 +14,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\QuanLyHoiDongResource\Pages\ViewQuanLyHoiDong;
+use CodeWithDennis\FilamentSelectTree\SelectTree;
 
 class QuanLyHoiDongResource extends Resource
 {
@@ -36,21 +38,66 @@ class QuanLyHoiDongResource extends Resource
                             ->required()
                             ->maxLength(255),
 
-                        Forms\Components\Select::make('ma_truong_hoi_dong')
-                            ->label('Trưởng Hội Đồng')
-                            ->options(User::all()->pluck('name', 'id'))
-                            ->searchable()
-                            ->preload()
-                            ->required(),
+                        Forms\Components\Grid::make()
+                            ->schema([
+                                SelectTree::make('don_vi_id')
+                                    ->label('Đơn vị')
+                                    ->relationship(
+                                        'donVi',
+                                        'ten_don_vi',
+                                        'don_vi_cha_id'
+                                    )
+                                    ->searchable()
+                                    ->enableBranchNode()
+                                    ->defaultOpenLevel(2)
+                                    ->required()
+                                    ->reactive()
+                                    ->columnSpan(1),
 
-                        Forms\Components\DatePicker::make('ngay_bat_dau')
-                            ->label('Ngày bắt đầu')
-                            ->required(),
+                                Forms\Components\Select::make('ma_truong_hoi_dong')
+                                    ->label('Trưởng Hội Đồng')
+                                    ->options(function (callable $get, $record) {
+                                        $donViId = $get('don_vi_id');
+                                        if (!$donViId && !$record) {
+                                            return [];
+                                        }
 
-                        Forms\Components\DatePicker::make('ngay_ket_thuc')
-                            ->label('Ngày kết thúc')
-                            ->after('ngay_bat_dau')
-                            ->required(),
+                                        if (!$donViId && $record) {
+                                            $donViId = $record->don_vi_id;
+                                        }
+
+                                        if (!$donViId) {
+                                            return [];
+                                        }
+
+                                        return User::whereHas('donVis', function ($query) use ($donViId) {
+                                            $query->where('don_vi.id', $donViId);
+                                        })->pluck('name', 'id');
+                                    })
+                                    ->searchable()
+                                    ->preload()
+                                    ->required()
+                                    ->reactive()
+                                    ->disabled(fn (callable $get, $record) => !$get('don_vi_id') && !($record && $record->don_vi_id))
+                                    ->helperText(fn (callable $get, $record) => !$get('don_vi_id') && !($record && $record->don_vi_id) ? 'Vui lòng chọn đơn vị trước' : '')
+                                    ->columnSpan(1),
+                            ])
+                            ->columns(2),
+
+                        Forms\Components\Grid::make()
+                            ->schema([
+                                Forms\Components\DatePicker::make('ngay_bat_dau')
+                                    ->label('Ngày bắt đầu')
+                                    ->required()
+                                    ->columnSpan(1),
+
+                                Forms\Components\DatePicker::make('ngay_ket_thuc')
+                                    ->label('Ngày kết thúc')
+                                    ->after('ngay_bat_dau')
+                                    ->required()
+                                    ->columnSpan(1),
+                            ])
+                            ->columns(2),
 
                         Forms\Components\Toggle::make('trang_thai')
                             ->label('Trạng thái')
@@ -76,6 +123,11 @@ class QuanLyHoiDongResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('ten_hoi_dong')
                     ->label('Tên hội đồng')
+                    ->searchable()
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('donVi.ten_don_vi')
+                    ->label('Đơn vị')
                     ->searchable()
                     ->sortable(),
 
@@ -114,6 +166,10 @@ class QuanLyHoiDongResource extends Resource
                         1 => 'Hoạt động',
                         0 => 'Không hoạt động',
                     ]),
+
+                Tables\Filters\SelectFilter::make('don_vi_id')
+                    ->label('Đơn vị')
+                    ->relationship('donVi', 'ten_don_vi'),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),

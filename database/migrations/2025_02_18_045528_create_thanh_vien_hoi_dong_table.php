@@ -20,7 +20,7 @@ return new class extends Migration
                 ->constrained('users')
                 ->onDelete('cascade');
             $table->timestamps();
-            $table->unique(['ma_hoi_dong', 'ma_nguoi_dung']);
+            $table->unique(['ma_hoi_dong', 'ma_nguoi_dung'], 'unique_member_council');
         });
     }
 

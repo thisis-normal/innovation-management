@@ -35,4 +35,10 @@ class ThanhVienHoiDong extends Model
     {
         return $this->hasMany(DiemCaNhan::class, 'ma_thanh_vien');
     }
+
+    // Thêm relationship với DonVi
+    public function donVi()
+    {
+        return $this->belongsTo(DonVi::class, 'don_vi_id');
+    }
 }

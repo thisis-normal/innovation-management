@@ -16,6 +16,7 @@ class HoiDongThamDinh extends Model
     protected $fillable = [
         'ten_hoi_dong',
         'ma_truong_hoi_dong',
+        'don_vi_id',
         'ngay_bat_dau',
         'ngay_ket_thuc',
         'trang_thai',
@@ -57,6 +58,12 @@ class HoiDongThamDinh extends Model
         return $this->hasMany(SangKien::class, 'ma_hoi_dong');
     }
 
+    // Thêm relationship với DonVi
+    public function donVi()
+    {
+        return $this->belongsTo(DonVi::class, 'don_vi_id');
+    }
+
     protected static function booted()
     {
         static::created(function ($hoiDong) {
@@ -65,6 +72,33 @@ class HoiDongThamDinh extends Model
                 'ma_hoi_dong' => $hoiDong->id,
                 'ma_nguoi_dung' => $hoiDong->ma_truong_hoi_dong,
             ]);
+        });
+
+        static::updated(function ($hoiDong) {
+            if ($hoiDong->wasChanged('ma_truong_hoi_dong')) {
+                $oldTruongHoiDongId = $hoiDong->getOriginal('ma_truong_hoi_dong');
+                $newTruongHoiDongId = $hoiDong->ma_truong_hoi_dong;
+
+                // Kiểm tra xem người được chọn làm trưởng hội đồng mới đã là thành viên chưa
+                $existingMember = ThanhVienHoiDong::where('ma_hoi_dong', $hoiDong->id)
+                    ->where('ma_nguoi_dung', $newTruongHoiDongId)
+                    ->first();
+
+                if ($existingMember) {
+                    // Nếu đã là thành viên, không cần thêm mới
+                    // Có thể thêm logic khác ở đây nếu cần
+                } else {
+                    // Nếu chưa là thành viên, thêm mới
+                    ThanhVienHoiDong::create([
+                        'ma_hoi_dong' => $hoiDong->id,
+                        'ma_nguoi_dung' => $newTruongHoiDongId,
+                    ]);
+                }
+
+                // Kiểm tra xem trưởng hội đồng cũ có muốn giữ lại làm thành viên không
+                // Trong trường hợp này, chúng ta sẽ giữ lại trưởng hội đồng cũ làm thành viên
+                // Bạn có thể thay đổi logic này theo yêu cầu
+            }
         });
     }
 }
