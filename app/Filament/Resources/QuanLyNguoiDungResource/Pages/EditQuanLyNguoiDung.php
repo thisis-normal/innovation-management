@@ -29,10 +29,9 @@ class EditQuanLyNguoiDung extends EditRecord
             ->pluck('vai_tro_id')
             ->toArray();
 
-        // Load don_vi_ids
-        $data['don_vi_ids'] = $this->record->lnkNguoiDungDonVis()
-            ->pluck('don_vi_id')
-            ->toArray();
+        // Load don_vi_id (đổi tên từ don_vi_ids)
+        $data['don_vi_id'] = $this->record->lnkNguoiDungDonVis()
+            ->first()?->don_vi_id;
 
         return $data;
     }

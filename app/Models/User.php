@@ -162,4 +162,9 @@ class User extends Authenticatable implements FilamentUser
             ]);
         }
     }
+
+    public function donVi()
+    {
+        return $this->belongsTo(DonVi::class, 'don_vi_id');
+    }
 }

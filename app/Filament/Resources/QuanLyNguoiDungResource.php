@@ -67,72 +67,30 @@ class QuanLyNguoiDungResource extends Resource
                             })
                             ->preload()
                             ->required(),
-                        SelectTree::make('don_vi_ids')
+                        SelectTree::make('don_vi_id')
                             ->label('Đơn vị')
-                            ->relationship('donVis', 'ten_don_vi', 'don_vi_cha_id')
+                            ->relationship(
+                                'donVi',
+                                'ten_don_vi',
+                                'don_vi_cha_id'
+                            )
                             ->searchable()
                             ->enableBranchNode()
                             ->defaultOpenLevel(2)
+                            ->required()
                             ->saveRelationshipsUsing(function ($record, $state) {
-                                if (empty($state)) {
-                                    $record->lnkNguoiDungDonVis()->delete();
-                                    return;
+                                // Xóa tất cả liên kết cũ
+                                $record->lnkNguoiDungDonVis()->delete();
+
+                                // Tạo liên kết mới
+                                if ($state) {
+                                    $record->lnkNguoiDungDonVis()->create([
+                                        'don_vi_id' => $state,
+                                        'nguoi_tao' => Auth::id(),
+                                        'nguoi_cap_nhat' => Auth::id(),
+                                    ]);
                                 }
-
-                                // Lấy danh sách đơn vị hiện tại
-                                $currentDonViIds = $record->lnkNguoiDungDonVis()
-                                    ->pluck('don_vi_id')
-                                    ->toArray();
-
-                                // Xóa những liên kết không còn trong danh sách mới
-                                $record->lnkNguoiDungDonVis()
-                                    ->whereNotIn('don_vi_id', $state)
-                                    ->delete();
-
-                                // Thêm mới những liên kết chưa tồn tại
-                                foreach ($state as $donViId) {
-                                    if (!in_array($donViId, $currentDonViIds)) {
-                                        $record->lnkNguoiDungDonVis()->create([
-                                            'don_vi_id' => $donViId,
-                                            'nguoi_tao' => Auth::id(),
-                                            'nguoi_cap_nhat' => Auth::id(),
-                                        ]);
-                                    }
-                                }
-                            })
-                            ->rules([
-                                function() {
-                                    return function($attribute, $value, $fail) {
-                                        if (empty($value)) return;
-
-                                        foreach ($value as $donViId) {
-                                            $donVi = DonVi::find($donViId);
-                                            if (!$donVi) continue;
-
-                                            // Kiểm tra xem có chọn cả cha và con không
-                                            foreach ($value as $otherId) {
-                                                if ($donViId === $otherId) continue;
-
-                                                $otherDonVi = DonVi::find($otherId);
-                                                if (!$otherDonVi) continue;
-
-                                                // Nếu đơn vị hiện tại là con và đã chọn đơn vị cha
-                                                if ($donVi->don_vi_cha_id !== null &&
-                                                    in_array($donVi->don_vi_cha_id, $value)) {
-                                                    $fail("Không thể chọn cả đơn vị cha và đơn vị con.");
-                                                    return;
-                                                }
-
-                                                // Nếu đơn vị hiện tại là cha và đã chọn đơn vị con
-                                                if ($donVi->donViCon->contains('id', $otherId)) {
-                                                    $fail("Không thể chọn cả đơn vị cha và đơn vị con.");
-                                                    return;
-                                                }
-                                            }
-                                        }
-                                    };
-                                }
-                            ]),
+                            }),
                     ])
                     ->columns(2)
             ]);
@@ -158,10 +116,9 @@ class QuanLyNguoiDungResource extends Resource
                     ->label('Vai trò')
                     ->badge()
                     ->separator(','),
-                Tables\Columns\TextColumn::make('donVis.ten_don_vi')
+                Tables\Columns\TextColumn::make('lnkNguoiDungDonVis.donVi.ten_don_vi')
                     ->label('Đơn vị')
-                    ->badge()
-                    ->separator(','),
+                    ->badge(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Ngày tạo')
                     ->dateTime('d/m/Y H:i')
