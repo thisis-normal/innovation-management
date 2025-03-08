@@ -34,7 +34,6 @@ class EditSangKien extends EditRecord
                 ->danger()
                 ->send();
             $this->redirect(SangKienResource::getUrl('index'));
-            return;
         }
 
         // Kiểm tra trạng thái có được phép chỉnh sửa không
@@ -52,47 +51,7 @@ class EditSangKien extends EditRecord
                 ->warning()
                 ->send();
             $this->redirect(SangKienResource::getUrl('index'));
-            return;
         }
-    }
-
-    protected function getFormActions(): array
-    {
-        // Kiểm tra trạng thái có được phép chỉnh sửa không
-        $editableStatuses = [
-            'draft',
-            'rejected_manager',
-            'rejected_secretary',
-            'rejected_council'
-        ];
-
-        // Nếu không ở trạng thái được phép sửa, trả về mảng rỗng (không có nút lưu)
-        if (!in_array($this->record->trangThaiSangKien->ma_trang_thai, $editableStatuses)) {
-            return [];
-        }
-
-        return parent::getFormActions();
-    }
-
-    // Vô hiệu hóa form khi không được phép chỉnh sửa
-    protected function getForms(): array
-    {
-        $forms = parent::getForms();
-
-        $editableStatuses = [
-            'draft',
-            'rejected_manager',
-            'rejected_secretary',
-            'rejected_council'
-        ];
-
-        if (!in_array($this->record->trangThaiSangKien->ma_trang_thai, $editableStatuses)) {
-            foreach ($forms as $form) {
-                $form->disabled();
-            }
-        }
-
-        return $forms;
     }
 
     protected function mutateFormDataBeforeSave(array $data): array

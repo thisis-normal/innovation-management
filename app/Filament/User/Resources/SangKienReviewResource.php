@@ -170,14 +170,13 @@ class SangKienReviewResource extends Resource
                     ->action(function (SangKien $record, array $data) {
                         try {
                             // Lấy trạng thái "pending_council"
-                            $pendingCouncilStatus = TrangThaiSangKien::where('ma_trang_thai', 'pending_council')->first();
-
-                            if (!$pendingCouncilStatus) {
+                            $pendingID = TrangThaiSangKien::query()->where('ma_trang_thai', 'pending_council')->first()->id;
+                            if (!$pendingID) {
                                 throw new \Exception('Không tìm thấy trạng thái "pending_council" trong hệ thống');
                             }
 
                             // Cập nhật thông tin sáng kiến
-                            $record->ma_trang_thai_sang_kien = $pendingCouncilStatus->id;
+                            $record->ma_trang_thai_sang_kien = $pendingID;
 
                             if (isset($data['hoi_dong_id'])) {
                                 $record->ma_hoi_dong = $data['hoi_dong_id'];
@@ -186,7 +185,6 @@ class SangKienReviewResource extends Resource
                             if (!empty($data['note'])) {
                                 $record->ghi_chu = $data['note'];
                             }
-
                             $record->save();
 
                             Notification::make()

@@ -138,7 +138,7 @@
                 {{-- Thay thế phần hiển thị lỗi --}}
                 @if(session('error') || $errors->has('username') || $errors->has('password'))
                     <div style="color: red; margin-bottom: 15px; text-align: center;">
-                        Sai tài khoản hoặc mật khẩu, vui lòng thử lại !!!
+                        {{ session('error') }}
                     </div>
                 @endif
 

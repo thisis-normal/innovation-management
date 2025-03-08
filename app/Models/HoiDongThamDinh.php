@@ -76,7 +76,6 @@ class HoiDongThamDinh extends Model
 
         static::updated(function ($hoiDong) {
             if ($hoiDong->wasChanged('ma_truong_hoi_dong')) {
-                $oldTruongHoiDongId = $hoiDong->getOriginal('ma_truong_hoi_dong');
                 $newTruongHoiDongId = $hoiDong->ma_truong_hoi_dong;
 
                 // Kiểm tra xem người được chọn làm trưởng hội đồng mới đã là thành viên chưa
@@ -84,20 +83,12 @@ class HoiDongThamDinh extends Model
                     ->where('ma_nguoi_dung', $newTruongHoiDongId)
                     ->first();
 
-                if ($existingMember) {
-                    // Nếu đã là thành viên, không cần thêm mới
-                    // Có thể thêm logic khác ở đây nếu cần
-                } else {
-                    // Nếu chưa là thành viên, thêm mới
-                    ThanhVienHoiDong::create([
+                if (!$existingMember) {
+                    ThanhVienHoiDong::query()->create([
                         'ma_hoi_dong' => $hoiDong->id,
                         'ma_nguoi_dung' => $newTruongHoiDongId,
                     ]);
                 }
-
-                // Kiểm tra xem trưởng hội đồng cũ có muốn giữ lại làm thành viên không
-                // Trong trường hợp này, chúng ta sẽ giữ lại trưởng hội đồng cũ làm thành viên
-                // Bạn có thể thay đổi logic này theo yêu cầu
             }
         });
     }

@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Hash;
  * @property integer $id
  * @property Collection|VaiTro[] $roles
  * @property Collection|DonVi[] $ma_don_vi
+ * @property Collection|DonVi[] $donVi
  */
 class User extends Authenticatable implements FilamentUser
 {
@@ -120,6 +121,7 @@ class User extends Authenticatable implements FilamentUser
             ->withPivot(['nguoi_tao', 'nguoi_cap_nhat'])
             ->withTimestamps();
     }
+
     public function hasRole($roles): bool
     {
         if (is_string($roles)) {
@@ -129,7 +131,6 @@ class User extends Authenticatable implements FilamentUser
                 })
                 ->exists();
         }
-
         if (is_array($roles)) {
             return $this->lnkNguoiDungVaiTros()
                 ->whereHas('vaiTro', function ($query) use ($roles) {
@@ -137,7 +138,6 @@ class User extends Authenticatable implements FilamentUser
                 })
                 ->exists();
         }
-
         return false;
     }
 

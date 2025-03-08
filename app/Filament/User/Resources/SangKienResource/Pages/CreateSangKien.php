@@ -18,12 +18,6 @@ class CreateSangKien extends CreateRecord
     {
         // Remove 'files' so it is not stored in the main table
         unset($data['files']);
-
-        // Ensure ma_don_vi is set
-        if (!isset($data['ma_don_vi'])) {
-            $data['ma_don_vi'] = auth()->user()->ma_don_vi;
-        }
-
         return $data;
     }
 
@@ -39,22 +33,6 @@ class CreateSangKien extends CreateRecord
                     'file_path'   => $filePath,
                 ]);
             }
-        }
-    }
-
-    // Thêm method để kiểm tra trước khi hiển thị form
-    protected function beforeFill(): void
-    {
-        $user = auth()->user();
-
-        if (!$user->ma_don_vi) {
-            Notification::make()
-                ->title('Lỗi')
-                ->body('Bạn chưa được gán đơn vị. Vui lòng liên hệ quản trị viên.')
-                ->danger()
-                ->send();
-
-            $this->redirect(SangKienResource::getUrl('index'));
         }
     }
 }

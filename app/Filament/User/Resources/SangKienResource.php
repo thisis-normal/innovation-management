@@ -75,8 +75,8 @@ class SangKienResource extends Resource
                     ->directory('innovation-files')
                     ->preserveFilenames()
                     ->maxSize(50 * 1024)
+                    ->helperText('Chỉ chấp nhận các loại file: DOC, DOCX, PDF, XLS, XLSX. Dung lượng tối đa 50MB/file.')
                     ->downloadable()
-                    ->openable()
                     ->required()
                     ->columnSpan('full')
                     ->getUploadedFileNameForStorageUsing(
