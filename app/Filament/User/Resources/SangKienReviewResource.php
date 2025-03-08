@@ -27,7 +27,6 @@ class SangKienReviewResource extends Resource
     protected static ?string $pluralModelLabel = 'Phê duyệt sáng kiến';
     protected static ?string $slug = 'duyet-sang-kien';
     protected static ?int $navigationSort = 2;
-    protected static ?string $navigationGroup = 'Xử lý sáng kiến';
     public static function getEloquentQuery(): Builder
     {
         $query = parent::getEloquentQuery();
@@ -150,7 +149,6 @@ class SangKienReviewResource extends Resource
                                 ->maxLength(1000),
                         ];
 
-                        // Chỉ hiển thị select hội đồng khi người dùng là thư ký
                         if (auth()->user()->hasRole('secretary')) {
                             array_unshift($formFields,
                                 Select::make('hoi_dong_id')
@@ -170,43 +168,39 @@ class SangKienReviewResource extends Resource
                         return $formFields;
                     })
                     ->action(function (SangKien $record, array $data) {
-                        // Store the note if provided
-                        if (!empty($data['note'])) {
-                            $record->ghi_chu = $data['note'];
+                        try {
+                            // Lấy trạng thái "pending_council"
+                            $pendingCouncilStatus = TrangThaiSangKien::where('ma_trang_thai', 'pending_council')->first();
+
+                            if (!$pendingCouncilStatus) {
+                                throw new \Exception('Không tìm thấy trạng thái "pending_council" trong hệ thống');
+                            }
+
+                            // Cập nhật thông tin sáng kiến
+                            $record->ma_trang_thai_sang_kien = $pendingCouncilStatus->id;
+
+                            if (isset($data['hoi_dong_id'])) {
+                                $record->ma_hoi_dong = $data['hoi_dong_id'];
+                            }
+
+                            if (!empty($data['note'])) {
+                                $record->ghi_chu = $data['note'];
+                            }
+
+                            $record->save();
+
+                            Notification::make()
+                                ->title('Phê duyệt thành công')
+                                ->success()
+                                ->send();
+
+                        } catch (\Exception $e) {
+                            Notification::make()
+                                ->title('Có lỗi xảy ra')
+                                ->body($e->getMessage())
+                                ->danger()
+                                ->send();
                         }
-
-                        // Get the current status of the record
-                        $currentStatus = $record->ma_trang_thai_sang_kien;
-                        $user = auth()->user();
-
-                        $pendingSecretaryId = TrangThaiSangKien::query()
-                            ->where('ma_trang_thai', 'pending_secretary')
-                            ->first()->id;
-                        $pendingManagerId = TrangThaiSangKien::query()
-                            ->where('ma_trang_thai', 'pending_manager')
-                            ->first()->id;
-                        $reviewingId = TrangThaiSangKien::query()
-                            ->where('ma_trang_thai', 'Reviewing')
-                            ->first()->id;
-
-                        if ($user->hasRole('manager') && $currentStatus === $pendingManagerId) {
-                            $record->ma_trang_thai_sang_kien = $pendingSecretaryId;
-                        } elseif ($user->hasRole('secretary') && $currentStatus === $pendingSecretaryId) {
-                            // Nếu là thư ký, cập nhật hội đồng và trạng thái
-                            $record->ma_trang_thai_sang_kien = $reviewingId;
-                            $record->ma_hoi_dong = $data['hoi_dong_id']; // Lưu ID hội đồng được chọn
-                        }
-
-                        $record->save();
-
-                        $message = $user->hasRole('secretary')
-                            ? 'Sáng kiến đã được phê duyệt và chuyển đến hội đồng thẩm định'
-                            : 'Sáng kiến đã được phê duyệt';
-
-                        Notification::make()
-                            ->title($message)
-                            ->success()
-                            ->send();
                     })
                     ->visible(fn () => auth()->user()->hasRole('manager') || auth()->user()->hasRole('secretary')),
 

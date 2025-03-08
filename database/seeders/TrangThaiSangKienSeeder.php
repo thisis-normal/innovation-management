@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use App\Models\TrangThaiSangKien;
 
 class TrangThaiSangKienSeeder extends Seeder
 {
@@ -63,8 +64,8 @@ class TrangThaiSangKienSeeder extends Seeder
             [
                 'ma_trang_thai' => 'pending_council',
                 'ten_trang_thai' => 'Chờ hội đồng phê duyệt',
-                'mo_ta' => 'Sáng kiến sau khi được kiểm tra bởi thư ký sẽ ở trạng thái đang thẩm định, phải chờ hội đồng duyệt.',
-                'order' => 6,
+                'mo_ta' => 'Sáng kiến đang chờ hội đồng thẩm định phê duyệt',
+                'order' => 4,
                 'is_active' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -105,6 +106,14 @@ class TrangThaiSangKienSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+        ]);
+
+        TrangThaiSangKien::create([
+            'ma_trang_thai' => 'pending_council',
+            'ten_trang_thai' => 'Chờ hội đồng phê duyệt',
+            'mo_ta' => 'Sáng kiến đang chờ hội đồng thẩm định phê duyệt',
+            'order' => 4,
+            'is_active' => true,
         ]);
     }
 }

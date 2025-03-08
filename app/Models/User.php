@@ -104,7 +104,7 @@ class User extends Authenticatable implements FilamentUser
                     ->withTimestamps();
     }
 
-    public function lnkNguoiDungDonVis()
+    public function lnkNguoiDungDonVis(): HasMany
     {
         return $this->hasMany(LnkNguoiDungDonVi::class, 'nguoi_dung_id');
     }
@@ -141,40 +141,29 @@ class User extends Authenticatable implements FilamentUser
         return false;
     }
 
-    public function donVis()
+    public function donVis(): BelongsToMany
     {
         return $this->belongsToMany(DonVi::class, 'lnk_nguoi_dung_don_vi', 'nguoi_dung_id', 'don_vi_id')
             ->withPivot(['nguoi_tao', 'nguoi_cap_nhat'])
             ->withTimestamps();
     }
 
-    public function syncDonVis(array $donViIds)
+    public function syncDonVis(array $donViIds): void
     {
-        // Xóa tất cả liên kết hiện tại
-        $this->lnkNguoiDungDonVis()->delete();
+        $pivotData = array_fill_keys($donViIds, [
+            'nguoi_tao' => Auth::id() ?? 1,
+            'nguoi_cap_nhat' => Auth::id() ?? 1,
+        ]);
 
-        // Tạo lại các liên kết mới
-        foreach ($donViIds as $donViId) {
-            $this->lnkNguoiDungDonVis()->create([
-                'don_vi_id' => $donViId,
-                'nguoi_tao' => Auth::id() ?? 1,
-                'nguoi_cap_nhat' => Auth::id() ?? 1,
-            ]);
-        }
+        $this->donVis()->sync($pivotData);
     }
 
-    public function donVi()
+    public function donVi(): BelongsToMany
     {
-        // Lấy đơn vị đầu tiên từ bảng liên kết
-        return $this->belongsToMany(DonVi::class, 'lnk_nguoi_dung_don_vi', 'nguoi_dung_id', 'don_vi_id')
-            ->withPivot(['nguoi_tao', 'nguoi_cap_nhat'])
-            ->withTimestamps()
-            ->orderBy('lnk_nguoi_dung_don_vi.created_at')
-            ->limit(1);
+        return $this->donVis()->oldest('lnk_nguoi_dung_don_vi.created_at')->limit(1);
     }
 
-    // Thêm accessor để lấy ma_don_vi
-    public function getMaDonViAttribute()
+    public function getMaDonViAttribute(): ?int
     {
         return $this->donVi->first()?->id;
     }

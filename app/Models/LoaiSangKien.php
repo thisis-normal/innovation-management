@@ -15,7 +15,7 @@ class LoaiSangKien extends Model
     ];
 
     // Relationship với bảng sang_kien (nếu có)
-    public function sangKien(): HasMany
+    public function sangKiens(): HasMany
     {
         return $this->hasMany(SangKien::class, 'ma_loai_sang_kien');
     }

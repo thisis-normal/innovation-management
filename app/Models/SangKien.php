@@ -70,7 +70,7 @@ class SangKien extends Model
     }
     public function loaiSangKien()
     {
-        return $this->belongsTo(LoaiSangKien::class, 'ma_loai_sang_kien');
+        return $this->belongsTo(LoaiSangKien::class, 'ma_loai_sang_kien', 'id');
     }
     public function hoiDongThamDinh(): BelongsTo
     {
