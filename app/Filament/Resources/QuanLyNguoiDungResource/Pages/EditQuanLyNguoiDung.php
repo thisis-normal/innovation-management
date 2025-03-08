@@ -51,6 +51,19 @@ class EditQuanLyNguoiDung extends EditRecord
                 ]);
             }
         }
+
+        // Xử lý đơn vị
+        if (!empty($this->data['don_vi_id'])) {
+            // Xóa liên kết cũ
+            $user->lnkNguoiDungDonVis()->delete();
+
+            // Tạo liên kết mới
+            $user->lnkNguoiDungDonVis()->create([
+                'don_vi_id' => $this->data['don_vi_id'],
+                'nguoi_tao' => Auth::id(),
+                'nguoi_cap_nhat' => Auth::id(),
+            ]);
+        }
     }
 
     protected function getHeaderActions(): array

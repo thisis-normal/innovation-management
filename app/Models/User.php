@@ -165,6 +165,17 @@ class User extends Authenticatable implements FilamentUser
 
     public function donVi()
     {
-        return $this->belongsTo(DonVi::class, 'don_vi_id');
+        // Lấy đơn vị đầu tiên từ bảng liên kết
+        return $this->belongsToMany(DonVi::class, 'lnk_nguoi_dung_don_vi', 'nguoi_dung_id', 'don_vi_id')
+            ->withPivot(['nguoi_tao', 'nguoi_cap_nhat'])
+            ->withTimestamps()
+            ->orderBy('lnk_nguoi_dung_don_vi.created_at')
+            ->limit(1);
+    }
+
+    // Thêm accessor để lấy ma_don_vi
+    public function getMaDonViAttribute()
+    {
+        return $this->donVi->first()?->id;
     }
 }

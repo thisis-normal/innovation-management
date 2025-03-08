@@ -9,6 +9,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use App\Providers\RouteServiceProvider;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -25,11 +26,14 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
-        $request->authenticate();
+        try {
+            $request->authenticate();
+            $request->session()->regenerate();
 
-        $request->session()->regenerate();
-
-        return redirect()->intended(Filament::getPanel('user')->getUrl());
+            return redirect()->intended(Filament::getPanel('user')->getUrl());
+        } catch (\Exception $e) {
+            return back()->with('error', 'Sai tài khoản hoặc mật khẩu, vui lòng thử lại');
+        }
     }
 
     /**

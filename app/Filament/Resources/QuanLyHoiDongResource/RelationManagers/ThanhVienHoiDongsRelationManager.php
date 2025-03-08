@@ -25,6 +25,7 @@ class ThanhVienHoiDongsRelationManager extends RelationManager
     protected static ?string $createButtonLabel = 'Thêm thành viên';
     protected static ?string $modalHeading = 'Thêm thành viên hội đồng';
     protected static ?string $modalCreateButtonLabel = 'Thêm';
+    protected static ?string $modalCreateAnotherButtonLabel = 'Thêm và thêm mới khác';
     protected static ?string $modalCancelButtonLabel = 'Hủy bỏ';
 
     public function form(Form $form): Form

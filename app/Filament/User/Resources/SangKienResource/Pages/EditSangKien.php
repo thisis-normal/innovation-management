@@ -25,16 +25,76 @@ class EditSangKien extends EditRecord
         parent::mount($record);
 
         $user = Auth::user();
-        // Check if the innovation's status is pending (pending_secretary)
-        if ($this->record->trangThaiSangKien->ma_trang_thai === 'pending_secretary'
-            && $this->record->ma_tac_gia === $user->id) {
+
+        // Kiểm tra xem sáng kiến có thuộc về user hiện tại không
+        if ($this->record->ma_tac_gia !== $user->id) {
             Notification::make()
-                ->title('Không thể chỉnh sửa sáng kiến trong trạng thái này')
+                ->title('Không có quyền chỉnh sửa')
+                ->body('Bạn không phải là tác giả của sáng kiến này.')
+                ->danger()
+                ->send();
+            $this->redirect(SangKienResource::getUrl('index'));
+            return;
+        }
+
+        // Kiểm tra trạng thái có được phép chỉnh sửa không
+        $editableStatuses = [
+            'draft',
+            'rejected_manager',
+            'rejected_secretary',
+            'rejected_council'
+        ];
+
+        if (!in_array($this->record->trangThaiSangKien->ma_trang_thai, $editableStatuses)) {
+            Notification::make()
+                ->title('Không thể chỉnh sửa')
+                ->body('Sáng kiến đang trong quá trình xét duyệt hoặc đã được phê duyệt.')
                 ->warning()
                 ->send();
             $this->redirect(SangKienResource::getUrl('index'));
+            return;
         }
     }
+
+    protected function getFormActions(): array
+    {
+        // Kiểm tra trạng thái có được phép chỉnh sửa không
+        $editableStatuses = [
+            'draft',
+            'rejected_manager',
+            'rejected_secretary',
+            'rejected_council'
+        ];
+
+        // Nếu không ở trạng thái được phép sửa, trả về mảng rỗng (không có nút lưu)
+        if (!in_array($this->record->trangThaiSangKien->ma_trang_thai, $editableStatuses)) {
+            return [];
+        }
+
+        return parent::getFormActions();
+    }
+
+    // Vô hiệu hóa form khi không được phép chỉnh sửa
+    protected function getForms(): array
+    {
+        $forms = parent::getForms();
+
+        $editableStatuses = [
+            'draft',
+            'rejected_manager',
+            'rejected_secretary',
+            'rejected_council'
+        ];
+
+        if (!in_array($this->record->trangThaiSangKien->ma_trang_thai, $editableStatuses)) {
+            foreach ($forms as $form) {
+                $form->disabled();
+            }
+        }
+
+        return $forms;
+    }
+
     protected function mutateFormDataBeforeSave(array $data): array
     {
         // Remove 'files' so it is not stored in the main table

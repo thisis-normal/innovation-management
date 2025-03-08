@@ -77,20 +77,7 @@ class QuanLyNguoiDungResource extends Resource
                             ->searchable()
                             ->enableBranchNode()
                             ->defaultOpenLevel(2)
-                            ->required()
-                            ->saveRelationshipsUsing(function ($record, $state) {
-                                // Xóa tất cả liên kết cũ
-                                $record->lnkNguoiDungDonVis()->delete();
-
-                                // Tạo liên kết mới
-                                if ($state) {
-                                    $record->lnkNguoiDungDonVis()->create([
-                                        'don_vi_id' => $state,
-                                        'nguoi_tao' => Auth::id(),
-                                        'nguoi_cap_nhat' => Auth::id(),
-                                    ]);
-                                }
-                            }),
+                            ->required(),
                     ])
                     ->columns(2)
             ]);
