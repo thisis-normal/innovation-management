@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Filament\Resources\SangKienResource\Pages;
+namespace App\Filament\Resources\QuanLySangKienResource\Pages;
 
-use App\Filament\Resources\SangKienResource;
+use App\Filament\Resources\QuanLySangKienResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 
-class ListSangKiens extends ListRecords
+class ListQuanLySangKiens extends ListRecords
 {
-    protected static string $resource = SangKienResource::class;
+    protected static string $resource = QuanLySangKienResource::class;
 
     protected function getHeaderActions(): array
     {

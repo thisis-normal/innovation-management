@@ -20,7 +20,7 @@ class TieuChiResource extends Resource
     protected static ?string $modelLabel = 'Tiêu chí chấm điểm';
     protected static ?string $pluralModelLabel = 'Tiêu chí chấm điểm';
     protected static ?string $slug = 'tieu-chi';
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 7;
     public static function form(Form $form): Form
     {
         return $form

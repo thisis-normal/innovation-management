@@ -25,11 +25,13 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
-        $request->authenticate();
-
-        $request->session()->regenerate();
-
-        return redirect()->intended(Filament::getPanel('user')->getUrl());
+        try {
+            $request->authenticate();
+            $request->session()->regenerate();
+            return redirect()->intended(Filament::getPanel('user')->getUrl());
+        } catch (\Exception $e) {
+            return back()->with('error', 'Sai tài khoản hoặc mật khẩu, vui lòng thử lại!');
+        }
     }
 
     /**

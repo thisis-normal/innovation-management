@@ -43,10 +43,4 @@ Route::get('/mail-test', function () {
         return 'Error sending email: ' . $e->getMessage();
     }
 });
-
-Route::get('/logout', function () {
-    Auth::logout();
-    return redirect('/');
-})->name('logout');
-
 require __DIR__.'/auth.php';

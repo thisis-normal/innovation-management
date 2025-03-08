@@ -1,9 +1,9 @@
-<div class="min-h-screen flex flex-col">
-    <div class="flex-grow">
+<div class="min-h-screen flex flex-col justify-between">
+    <main class="flex-1">
         {{ $slot }}
-    </div>
+    </main>
 
-    <div class="filament-footer w-full bg-white dark:bg-gray-800 border-t dark:border-gray-700 p-4">
+    <footer class="filament-footer w-full bg-white dark:bg-gray-800 border-t dark:border-gray-700 p-4">
         <div class="flex items-center justify-between">
             <div class="flex items-center space-x-4">
                 <p class="text-gray-600 dark:text-gray-400">
@@ -17,5 +17,5 @@
                 VNPT
             </p>
         </div>
-    </div>
+    </footer>
 </div>

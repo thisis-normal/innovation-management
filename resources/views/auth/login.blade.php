@@ -39,7 +39,7 @@
             align-items: center;
             justify-content: center;
             padding: 20px;
-            margin-bottom: 60px;
+            margin-bottom: 20px; /* Thêm margin bottom để tránh bị footer che */
         }
 
         .login-container {
@@ -48,6 +48,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            padding: 40px 0; /* Thêm padding cho container */
         }
 
         .logo-section {
@@ -111,10 +112,9 @@
             color: white;
             text-align: center;
             padding: 15px;
-            position: fixed;
-            bottom: 0;
             width: 100%;
             font-size: 16px;
+            margin-top: auto;
         }
     </style>
 </head>
@@ -135,14 +135,10 @@
                     Nếu bạn chưa có tài khoản, vui lòng liên hệ: 0123456789
                 </div>
 
-                {{-- Display error messages if any --}}
-                @if ($errors->any())
-                    <div class="alert alert-danger">
-                        <ul>
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
+                {{-- Thay thế phần hiển thị lỗi --}}
+                @if(session('error') || $errors->has('username') || $errors->has('password'))
+                    <div style="color: red; margin-bottom: 15px; text-align: center;">
+                        {{ session('error') }}
                     </div>
                 @endif
 

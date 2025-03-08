@@ -26,14 +26,16 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
 use ZipArchive;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Str;
 
 class SangKienResource extends Resource
 {
     protected static ?string $model = SangKien::class;
     protected static bool $shouldSkipAuthorization = true;
-    protected static ?string $navigationLabel = 'Sáng Kiến'; // Custom label in sidebar
-    protected static ?string $pluralModelLabel = 'Sáng Kiến'; // Used for breadcrumbs
-    protected static ?string $modelLabel = 'Sáng Kiến'; // Used in forms & buttons
+    protected static ?string $navigationLabel = 'Sáng Kiến';
+    protected static ?string $pluralModelLabel = 'Sáng Kiến';
+    protected static ?string $modelLabel = 'Sáng Kiến';
     protected static ?string $navigationIcon = 'heroicon-o-light-bulb';
     protected static ?string $slug = 'sang-kien';
     protected static ?int $navigationSort = 1;
@@ -65,21 +67,31 @@ class SangKienResource extends Resource
                     ->maxFiles(5)
                     ->acceptedFileTypes([
                         'application/msword',
-                        'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // DOC, DOCX
-                        'application/pdf', // PDF
+                        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                        'application/pdf',
                         'application/vnd.ms-excel',
-                        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' // XLS, XLSX
+                        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
                     ])
                     ->directory('innovation-files')
+                    ->preserveFilenames()
+                    ->maxSize(50 * 1024)
+                    ->helperText('Chỉ chấp nhận các loại file: DOC, DOCX, PDF, XLS, XLSX. Dung lượng tối đa 50MB/file.')
                     ->downloadable()
-                    ->openable()
                     ->required()
                     ->columnSpan('full')
-                    ->maxSize(50 * 1024) // 50 MB
-                    ->helperText('Chỉ chấp nhận các loại file: DOC, DOCX, PDF, XLS, XLSX. Dung lượng tối đa 50MB/file.')
+                    ->getUploadedFileNameForStorageUsing(
+                        function (FileUpload $component, UploadedFile $file): string {
+                            return time() . '_' . str_replace(
+                                ['#', '?', '\\', '/', ' ', '[', ']', '{', '}', '(', ')', '<', '>', '&', '%', '$', '@', '!', '^', '*', '+', '=', '\'', '"', ';', ',', '|'],
+                                '-',
+                                $file->getClientOriginalName()
+                            );
+                        }
+                    )
                     ->afterStateHydrated(function ($state, callable $set, $record) {
                         if ($record) {
-                            $set('files', TaiLieuSangKien::query()->where('sang_kien_id', $record->id)
+                            $set('files', TaiLieuSangKien::query()
+                                ->where('sang_kien_id', $record->id)
                                 ->pluck('file_path')
                                 ->toArray());
                         }
@@ -106,8 +118,26 @@ class SangKienResource extends Resource
                     ])
                     ->native(false),
                 Hidden::make('ma_tac_gia')->default(Auth::id()),
-                Hidden::make('ma_don_vi')->default(Auth::user()->ma_don_vi),
-                Hidden::make('ma_trang_thai_sang_kien')->default(TrangThaiSangKien::query()->where('ma_trang_thai', 'draft')->first()->id),
+                Hidden::make('ma_don_vi')
+                    ->default(function() {
+                        $user = Auth::user();
+                        $maDonVi = $user->donVi->first()?->id;
+
+                        if (!$maDonVi) {
+                            Notification::make()
+                                ->title('Lỗi')
+                                ->body('Bạn chưa được gán đơn vị. Vui lòng liên hệ quản trị viên.')
+                                ->danger()
+                                ->persistent()
+                                ->send();
+
+                            throw new \Exception('Người dùng chưa được gán đơn vị');
+                        }
+
+                        return $maDonVi;
+                    }),
+                Hidden::make('ma_trang_thai_sang_kien')
+                    ->default(TrangThaiSangKien::query()->where('ma_trang_thai', 'draft')->first()->id),
             ]);
     }
 

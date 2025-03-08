@@ -29,10 +29,9 @@ class EditQuanLyNguoiDung extends EditRecord
             ->pluck('vai_tro_id')
             ->toArray();
 
-        // Load don_vi_ids
-        $data['don_vi_ids'] = $this->record->lnkNguoiDungDonVis()
-            ->pluck('don_vi_id')
-            ->toArray();
+        // Load don_vi_id (đổi tên từ don_vi_ids)
+        $data['don_vi_id'] = $this->record->lnkNguoiDungDonVis()
+            ->first()?->don_vi_id;
 
         return $data;
     }
@@ -51,6 +50,19 @@ class EditQuanLyNguoiDung extends EditRecord
                     'nguoi_cap_nhat' => Auth::id(),
                 ]);
             }
+        }
+
+        // Xử lý đơn vị
+        if (!empty($this->data['don_vi_id'])) {
+            // Xóa liên kết cũ
+            $user->lnkNguoiDungDonVis()->delete();
+
+            // Tạo liên kết mới
+            $user->lnkNguoiDungDonVis()->create([
+                'don_vi_id' => $this->data['don_vi_id'],
+                'nguoi_tao' => Auth::id(),
+                'nguoi_cap_nhat' => Auth::id(),
+            ]);
         }
     }
 

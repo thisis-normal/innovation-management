@@ -51,20 +51,13 @@ class CreateQuanLyNguoiDung extends CreateRecord
             }
         }
 
-        // Xử lý đơn vị - Sử dụng updateOrCreate để tránh trùng lặp
-        if (!empty($this->data['don_vi_ids'])) {
-            foreach ($this->data['don_vi_ids'] as $donViId) {
-                $user->lnkNguoiDungDonVis()->updateOrCreate(
-                    [
-                        'nguoi_dung_id' => $user->id,
-                        'don_vi_id' => $donViId,
-                    ],
-                    [
-                        'nguoi_tao' => Auth::id(),
-                        'nguoi_cap_nhat' => Auth::id(),
-                    ]
-                );
-            }
+        // Xử lý đơn vị
+        if (!empty($this->data['don_vi_id'])) {
+            $user->lnkNguoiDungDonVis()->create([
+                'don_vi_id' => $this->data['don_vi_id'],
+                'nguoi_tao' => Auth::id(),
+                'nguoi_cap_nhat' => Auth::id(),
+            ]);
         }
     }
 

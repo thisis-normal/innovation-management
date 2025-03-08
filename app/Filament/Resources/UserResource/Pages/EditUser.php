@@ -41,6 +41,23 @@ class EditUser extends EditRecord
 
     protected function afterSave(): void
     {
+        $data = $this->data;
+
+        // Kiểm tra xem mật khẩu có được thay đổi không
+        if (isset($data['password']) && !empty($data['password'])) {
+            // Hiển thị thông báo trước khi đăng xuất
+            Notification::make()
+                ->title('Cập nhật mật khẩu thành công')
+                ->body('Vui lòng đăng nhập lại')
+                ->success()
+                ->send();
+
+            // Chuyển hướng đến route logout
+            $this->redirect('/logout');
+            return;
+        }
+
+        // Trường hợp không đổi mật khẩu
         Notification::make()
             ->title('Cập nhật thông tin thành công')
             ->success()
@@ -49,6 +66,6 @@ class EditUser extends EditRecord
 
     protected function getRedirectUrl(): string
     {
-        return $this->getResource()::getUrl('edit', ['record' => $this->getRecord()]);
+        return Filament::getPanel('user')->getUrl();
     }
 }
