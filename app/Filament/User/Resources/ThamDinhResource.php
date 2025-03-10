@@ -30,6 +30,7 @@ class ThamDinhResource extends Resource
     protected static ?string $pluralModelLabel = 'Thẩm định sáng kiến';
     protected static ?string $slug = 'tham-dinh-sang-kien';
     protected static ?int $navigationSort = 3;
+
     public static function getEloquentQuery(): Builder
     {
         $user = Auth::user();
@@ -168,31 +169,52 @@ class ThamDinhResource extends Resource
                     ->icon('heroicon-o-x-mark')
                     ->color('danger')
                     ->requiresConfirmation()
-                    ->form([
-                        Forms\Components\Textarea::make('ly_do')
-                            ->label('Lý do từ chối')
-                            ->required()
-                    ])
-                    ->action(function (SangKien $record, array $data) {
-                        $totalMembers = $record->hoiDongThamDinh->thanhVienHoiDongs()->count();
-                        $rejectedCount = $record->hoiDongThamDinh->thanhVienHoiDongs()
-                            ->where('da_duyet', false)
-                            ->count();
-
-                        if ($rejectedCount > $totalMembers / 2) {
-                            // Chuyển sang trạng thái từ chối bởi hội đồng
-                            $newStatusId = TrangThaiSangKien::where('ma_trang_thai', 'rejected_council')->first()->id;
-                            $record->ma_trang_thai_sang_kien = $newStatusId;
-                            $record->ghi_chu = $data['ly_do'];
-                            $record->save();
+                    ->modalHeading('Từ chối sáng kiến')
+                    ->modalDescription('Bạn có chắc chắn muốn từ chối sáng kiến này?')
+                    ->action(function (SangKien $record) {
+                        // Kiểm tra sự tồn tại của hoiDongThamDinh
+                        if (!$record->hoiDongThamDinh) {
+                            Notification::make()
+                                ->title('Lỗi')
+                                ->body('Sáng kiến chưa được phân công hội đồng')
+                                ->danger()
+                                ->send();
+                            return;
                         }
 
-                        Notification::make()
-                            ->title('Đã từ chối sáng kiến')
-                            ->success()
-                            ->send();
+                        $user = Auth::user();
+                        $thanhVien = ThanhVienHoiDong::where('ma_hoi_dong', $record->ma_hoi_dong)
+                            ->where('ma_nguoi_dung', $user->id)
+                            ->first();
+
+                        if ($thanhVien) {
+                            $thanhVien->da_duyet = false;
+                            $thanhVien->save();
+
+                            // Kiểm tra số lượng thành viên đã từ chối
+                            $totalMembers = $record->hoiDongThamDinh->thanhVienHoiDongs()->count();
+                            $rejectedCount = $record->hoiDongThamDinh->thanhVienHoiDongs()
+                                ->where('da_duyet', false)
+                                ->count();
+
+                            if ($rejectedCount > $totalMembers / 2) {
+                                // Chuyển sang trạng thái từ chối bởi hội đồng
+                                $newStatusId = TrangThaiSangKien::where('ma_trang_thai', 'rejected_council')->first()->id;
+                                $record->ma_trang_thai_sang_kien = $newStatusId;
+                                $record->save();
+                            }
+
+                            Notification::make()
+                                ->title('Đã từ chối sáng kiến')
+                                ->success()
+                                ->send();
+                        }
                     })
                     ->visible(function (SangKien $record) {
+                        if (!$record->hoiDongThamDinh) {
+                            return false;
+                        }
+
                         $user = Auth::user();
                         $thanhVien = ThanhVienHoiDong::where('ma_hoi_dong', $record->ma_hoi_dong)
                             ->where('ma_nguoi_dung', $user->id)

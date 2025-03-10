@@ -29,6 +29,7 @@ use Filament\Actions\Exports\Exporter;
 use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Actions\ExportBulkAction;
 use App\Exports\SangKienExporter;
+use CodeWithDennis\FilamentSelectTree\SelectTree;
 
 class BaoCaoResource extends Resource
 {
@@ -41,7 +42,6 @@ class BaoCaoResource extends Resource
     protected static ?string $slug = 'bao-cao';
     protected static ?int $navigationSort = 3;
 
-    // This resource is only accessible for council members.
     public static function canViewAny(): bool
     {
         return auth()->user()->hasRole(['secretary']);
@@ -73,7 +73,8 @@ class BaoCaoResource extends Resource
                 TextColumn::make('mo_ta')
                     ->label('Mô Tả')
                     ->limit(50)
-                    ->searchable(),
+                    ->searchable()
+                    ->state(fn ($record) => strip_tags($record->mo_ta)), // Loại bỏ thẻ HTML
 
                 TextColumn::make('sau_khi_ap_dung')
                     ->label('Sau khi áp dụng')
@@ -127,31 +128,41 @@ class BaoCaoResource extends Resource
                             ->all();
                     }),
 
-                SelectFilter::make('ma_don_vi')
-                    ->label('Đơn Vị')
-                    ->relationship('donVi', 'ten_don_vi')
-                    ->searchable()
-                    ->preload()
-                    ->multiple()
+                Filter::make('ma_don_vi')
+                    ->form([
+                        SelectTree::make('don_vi')
+                            ->label('Đơn Vị')
+                            ->relationship('donVi', 'ten_don_vi', 'don_vi_cha_id')
+                            ->searchable()
+                            ->enableBranchNode()
+                            ->defaultOpenLevel(2),
+                    ])
                     ->query(function (Builder $query, array $data): Builder {
-                        if (!empty($data['values'])) {
-                            $query->whereIn('ma_don_vi', $data['values']);
+                        if (!empty($data['don_vi'])) {
+                            $selectedId = $data['don_vi'];
+                            // Lấy tất cả các đơn vị con của đơn vị được chọn
+                            $allUnitIds = DonVi::where('id', $selectedId)
+                                ->with('allChildren')
+                                ->get()
+                                ->pluck('allChildren.*.id')
+                                ->flatten()
+                                ->push($selectedId)
+                                ->unique()
+                                ->all();
+
+                            $query->whereIn('ma_don_vi', $allUnitIds);
                         }
                         return $query;
                     })
                     ->indicateUsing(function (array $data): array {
-                        if (!$data['values'] || count($data['values']) === 0) {
+                        if (!$data['don_vi']) {
                             return [];
                         }
 
-                        return Collection::wrap($data['values'])
-                            ->map(function (string $value): Indicator {
-                                $donVi = DonVi::find($value);
-                                $label = $donVi ? $donVi->ten_don_vi : $value;
+                        $donVi = DonVi::find($data['don_vi']);
+                        $label = $donVi ? $donVi->ten_don_vi : $data['don_vi'];
 
-                                return Indicator::make("Đơn vị: {$label}");
-                            })
-                            ->all();
+                        return [Indicator::make("Đơn vị: {$label}")];
                     }),
 
                 Filter::make('created_at')
