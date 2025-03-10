@@ -81,12 +81,16 @@ class ThamDinhResource extends Resource
                             return $record->trangThaiSangKien->ten_trang_thai;
                         }
 
-                        $approvedCount = $record->hoiDongThamDinh->thanhVienHoiDongs()
-                            ->where('da_duyet', true)
+                        // Lấy số lượng thành viên đã phê duyệt cho sáng kiến cụ thể này
+                        $approvedCount = $record->thanhVienHoiDongs()
+                            ->wherePivot('da_duyet', true)
+                            ->wherePivot('ma_sang_kien', $record->id) // Đảm bảo chỉ tính cho sáng kiến hiện tại
                             ->count();
+
+                        // Lấy tổng số thành viên của hội đồng
                         $totalMembers = $record->hoiDongThamDinh->thanhVienHoiDongs()->count();
 
-                        return "{$record->trangThaiSangKien->ten_trang_thai} ({$approvedCount}/{$totalMembers})";
+                        return "Chờ hội đồng phê duyệt ({$approvedCount}/{$totalMembers})";
                     })
                     ->badge()
                     ->color(fn ($record) => 'warning'),
@@ -129,14 +133,17 @@ class ThamDinhResource extends Resource
                             ->first();
 
                         if ($thanhVien) {
-                            $thanhVien->da_duyet = true;
-                            $thanhVien->save();
+                            // Cập nhật trạng thái phê duyệt trong bảng trung gian
+                            $thanhVien->sangKiens()->syncWithoutDetaching([
+                                $record->id => ['da_duyet' => true]
+                            ]);
 
-                            // Kiểm tra số lượng thành viên đã duyệt
-                            $totalMembers = $record->hoiDongThamDinh->thanhVienHoiDongs()->count();
-                            $approvedCount = $record->hoiDongThamDinh->thanhVienHoiDongs()
-                                ->where('da_duyet', true)
+                            // Kiểm tra số lượng thành viên đã duyệt cho sáng kiến này
+                            $approvedCount = $record->thanhVienHoiDongs()
+                                ->wherePivot('da_duyet', true)
+                                ->wherePivot('ma_sang_kien', $record->id)
                                 ->count();
+                            $totalMembers = $record->hoiDongThamDinh->thanhVienHoiDongs()->count();
 
                             if ($approvedCount >= ceil($totalMembers / 2)) {
                                 // Chuyển sang trạng thái chấm điểm vòng 1
@@ -161,7 +168,11 @@ class ThamDinhResource extends Resource
                             ->where('ma_nguoi_dung', $user->id)
                             ->first();
 
-                        return $thanhVien && !$thanhVien->da_duyet;
+                        // Kiểm tra xem thành viên đã phê duyệt sáng kiến này chưa
+                        return $thanhVien && !$record->thanhVienHoiDongs()
+                            ->where('ma_nguoi_dung', $user->id)
+                            ->wherePivot('da_duyet', true)
+                            ->exists();
                     }),
 
                 Action::make('reject')
@@ -188,14 +199,17 @@ class ThamDinhResource extends Resource
                             ->first();
 
                         if ($thanhVien) {
-                            $thanhVien->da_duyet = false;
-                            $thanhVien->save();
+                            // Cập nhật trạng thái từ chối trong bảng trung gian
+                            $thanhVien->sangKiens()->syncWithoutDetaching([
+                                $record->id => ['da_duyet' => false]
+                            ]);
 
-                            // Kiểm tra số lượng thành viên đã từ chối
-                            $totalMembers = $record->hoiDongThamDinh->thanhVienHoiDongs()->count();
-                            $rejectedCount = $record->hoiDongThamDinh->thanhVienHoiDongs()
-                                ->where('da_duyet', false)
+                            // Kiểm tra số lượng thành viên đã từ chối cho sáng kiến này
+                            $rejectedCount = $record->thanhVienHoiDongs()
+                                ->wherePivot('da_duyet', false)
+                                ->wherePivot('ma_sang_kien', $record->id)
                                 ->count();
+                            $totalMembers = $record->hoiDongThamDinh->thanhVienHoiDongs()->count();
 
                             if ($rejectedCount > $totalMembers / 2) {
                                 // Chuyển sang trạng thái từ chối bởi hội đồng
@@ -220,7 +234,11 @@ class ThamDinhResource extends Resource
                             ->where('ma_nguoi_dung', $user->id)
                             ->first();
 
-                        return $thanhVien && !$thanhVien->da_duyet;
+                        // Kiểm tra xem thành viên đã từ chối sáng kiến này chưa
+                        return $thanhVien && !$record->thanhVienHoiDongs()
+                            ->where('ma_nguoi_dung', $user->id)
+                            ->wherePivot('da_duyet', false)
+                            ->exists();
                     }),
 
                 Action::make('Download')

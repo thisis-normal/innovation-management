@@ -51,12 +51,13 @@ class ViewThamDinh extends ViewRecord
                                             return $record->trangThaiSangKien->ten_trang_thai;
                                         }
 
-                                        $approvedCount = $record->hoiDongThamDinh->thanhVienHoiDongs()
-                                            ->where('da_duyet', true)
+                                        $approvedCount = $record->thanhVienHoiDongs()
+                                            ->wherePivot('da_duyet', true)
+                                            ->wherePivot('ma_sang_kien', $record->id)
                                             ->count();
                                         $totalMembers = $record->hoiDongThamDinh->thanhVienHoiDongs()->count();
 
-                                        return "{$record->trangThaiSangKien->ten_trang_thai} ({$approvedCount}/{$totalMembers})";
+                                        return "Chờ hội đồng phê duyệt ({$approvedCount}/{$totalMembers})";
                                     })
                                     ->color(Color::Amber),
                             ]),
@@ -258,10 +259,11 @@ class ViewThamDinh extends ViewRecord
                                 TextEntry::make('hoiDongThamDinh.thanhVienHoiDongs')
                                     ->label('Tỷ lệ phê duyệt')
                                     ->formatStateUsing(function ($record) {
-                                        $totalMembers = $record->hoiDongThamDinh->thanhVienHoiDongs()->count();
-                                        $approvedCount = $record->hoiDongThamDinh->thanhVienHoiDongs()
-                                            ->where('da_duyet', true)
+                                        $approvedCount = $record->thanhVienHoiDongs()
+                                            ->wherePivot('da_duyet', true)
+                                            ->wherePivot('ma_sang_kien', $record->id)
                                             ->count();
+                                        $totalMembers = $record->hoiDongThamDinh->thanhVienHoiDongs()->count();
 
                                         $percentage = $totalMembers > 0 ? round(($approvedCount / $totalMembers) * 100) : 0;
 
@@ -284,8 +286,9 @@ class ViewThamDinh extends ViewRecord
                                         TextEntry::make('hoiDongThamDinh.thanhVienHoiDongs')
                                             ->label('Đã phê duyệt')
                                             ->formatStateUsing(function ($record) {
-                                                $approvedMembers = $record->hoiDongThamDinh->thanhVienHoiDongs()
-                                                    ->where('da_duyet', true)
+                                                $approvedMembers = $record->thanhVienHoiDongs()
+                                                    ->wherePivot('da_duyet', true)
+                                                    ->wherePivot('ma_sang_kien', $record->id)
                                                     ->with(['user', 'user.donVis'])
                                                     ->get();
 
@@ -316,8 +319,12 @@ class ViewThamDinh extends ViewRecord
                                         TextEntry::make('hoiDongThamDinh.thanhVienHoiDongs')
                                             ->label('Chưa phê duyệt')
                                             ->formatStateUsing(function ($record) {
-                                                $pendingMembers = $record->hoiDongThamDinh->thanhVienHoiDongs()
-                                                    ->where('da_duyet', false)
+                                                $pendingMembers = $record->thanhVienHoiDongs()
+                                                    ->wherePivot('ma_sang_kien', $record->id)
+                                                    ->where(function ($query) {
+                                                        $query->whereNull('pivot_da_duyet')
+                                                              ->orWhere('pivot_da_duyet', 0);
+                                                    })
                                                     ->with(['user', 'user.donVis'])
                                                     ->get();
 

@@ -5,6 +5,7 @@ namespace App\Filament\User\Resources;
 use App\Filament\User\Resources\SangKienReviewResource\Pages;
 use App\Models\SangKien;
 use App\Models\TrangThaiSangKien;
+use App\Models\ThanhVienHoiDong;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
@@ -27,6 +28,7 @@ class SangKienReviewResource extends Resource
     protected static ?string $pluralModelLabel = 'Phê duyệt sáng kiến';
     protected static ?string $slug = 'duyet-sang-kien';
     protected static ?int $navigationSort = 2;
+
     public static function getEloquentQuery(): Builder
     {
         $query = parent::getEloquentQuery();
@@ -35,9 +37,7 @@ class SangKienReviewResource extends Resource
         if (!$user) {
             return $query->whereRaw('1 = 0'); // No user, show nothing
         }
-//        if ($user->hasRole('admin')) { //Assumed role name
-//            return $query; // Admin sees all
-//        }
+
         $roles = $user->roles->pluck('ma_vai_tro')->toArray();
 
         // If user has both roles, show all records with status 'pending_manager' and 'pending_secretary'
@@ -169,17 +169,38 @@ class SangKienReviewResource extends Resource
                     })
                     ->action(function (SangKien $record, array $data) {
                         try {
-                            // Lấy trạng thái "pending_council"
-                            $pendingID = TrangThaiSangKien::query()->where('ma_trang_thai', 'pending_council')->first()->id;
-                            if (!$pendingID) {
-                                throw new \Exception('Không tìm thấy trạng thái "pending_council" trong hệ thống');
-                            }
+                            $currentStatus = $record->ma_trang_thai_sang_kien;
+                            $pendingManagerId = TrangThaiSangKien::query()->where('ma_trang_thai', 'pending_manager')->first()->id;
+                            $pendingSecretaryId = TrangThaiSangKien::query()->where('ma_trang_thai', 'pending_secretary')->first()->id;
+                            $pendingCouncilId = TrangThaiSangKien::query()->where('ma_trang_thai', 'pending_council')->first()->id;
 
-                            // Cập nhật thông tin sáng kiến
-                            $record->ma_trang_thai_sang_kien = $pendingID;
-
-                            if (isset($data['hoi_dong_id'])) {
-                                $record->ma_hoi_dong = $data['hoi_dong_id'];
+                            if (auth()->user()->hasRole('manager')) {
+                                if ($currentStatus === $pendingManagerId) {
+                                    // Trưởng phòng duyệt, chuyển sang pending_secretary
+                                    $record->ma_trang_thai_sang_kien = $pendingSecretaryId;
+                                } else {
+                                    throw new \Exception('Sáng kiến không ở trạng thái chờ duyệt của trưởng phòng.');
+                                }
+                            } elseif (auth()->user()->hasRole('secretary')) {
+                                if ($currentStatus === $pendingSecretaryId) {
+                                    // Thư ký duyệt, chọn hội đồng và chuyển sang pending_council
+                                    $record->ma_trang_thai_sang_kien = $pendingCouncilId;
+                                    if (isset($data['hoi_dong_id'])) {
+                                        $record->ma_hoi_dong = $data['hoi_dong_id'];
+                                        // Lấy danh sách thành viên hội đồng
+                                        $thanhViens = ThanhVienHoiDong::where('ma_hoi_dong', $data['hoi_dong_id'])->get();
+                                        // Tạo bản ghi trong bảng trung gian cho từng thành viên
+                                        foreach ($thanhViens as $thanhVien) {
+                                            $record->thanhVienHoiDongs()->syncWithoutDetaching([
+                                                $thanhVien->id => ['da_duyet' => null] // Đảm bảo trạng thái ban đầu là null
+                                            ]);
+                                        }
+                                    } else {
+                                        throw new \Exception('Vui lòng chọn hội đồng thẩm định.');
+                                    }
+                                } else {
+                                    throw new \Exception('Sáng kiến không ở trạng thái chờ duyệt của thư ký.');
+                                }
                             }
 
                             if (!empty($data['note'])) {
@@ -191,7 +212,6 @@ class SangKienReviewResource extends Resource
                                 ->title('Phê duyệt thành công')
                                 ->success()
                                 ->send();
-
                         } catch (\Exception $e) {
                             Notification::make()
                                 ->title('Có lỗi xảy ra')
@@ -206,7 +226,7 @@ class SangKienReviewResource extends Resource
                     ->label('Từ chối')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->modalHeading(fn (SangKien $record) => 'Từ chối sáng kiến: ' . $record->title)
+                    ->modalHeading(fn (SangKien $record) => 'Từ chối sáng kiến: ' . $record->ten_sang_kien)
                     ->modalDescription('Vui lòng cung cấp lý do từ chối sáng kiến này.')
                     ->form([
                         Forms\Components\Textarea::make('note')
@@ -220,22 +240,16 @@ class SangKienReviewResource extends Resource
                         if (!empty($data['note'])) {
                             $record->ghi_chu = $data['note'];
                         }
-                        // Get the current status of the record
-                        $currentStatus = $record->ma_trang_thai_sang_kien;
-
                         // Update status based on current user role
                         $user = auth()->user();
                         if ($user->hasRole('secretary')) {
-                            // Get id from trang_thai_sang_kien table where ma_trang_thai = 'pending_secretary'
                             $pendingSecretaryId = TrangThaiSangKien::query()->where('ma_trang_thai', 'pending_secretary')->first()->id;
-                            if ($currentStatus === $pendingSecretaryId) {
-                                //set new ma_trang_thai_sang_kien into ID which has ma_trang_thai = 'Reviewing'
+                            if ($record->ma_trang_thai_sang_kien === $pendingSecretaryId) {
                                 $record->ma_trang_thai_sang_kien = TrangThaiSangKien::query()->where('ma_trang_thai', 'rejected_secretary')->first()->id;
                             }
                         } elseif ($user->hasRole('manager')) {
-                            // Get id from trang_thai_sang_kien table where ma_trang_thai = 'pending_manager'
                             $pendingManagerId = TrangThaiSangKien::query()->where('ma_trang_thai', 'pending_manager')->first()->id;
-                            if ($currentStatus === $pendingManagerId) {
+                            if ($record->ma_trang_thai_sang_kien === $pendingManagerId) {
                                 $record->ma_trang_thai_sang_kien = TrangThaiSangKien::query()->where('ma_trang_thai', 'rejected_manager')->first()->id;
                             }
                         }
