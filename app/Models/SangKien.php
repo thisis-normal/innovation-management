@@ -48,32 +48,47 @@ class SangKien extends Model
     {
         return $this->belongsTo(DonVi::class, 'ma_don_vi');
     }
+
     public function diemHoiDongs()
     {
         return $this->hasMany(DiemHoiDong::class, 'ma_sang_kien');
     }
+
     public function diemCaNhans()
     {
         return $this->hasMany(DiemCaNhan::class, 'ma_sang_kien');
     }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'ma_tac_gia', 'id');
     }
+
     public function taiLieuSangKien(): HasMany
     {
         return $this->hasMany(TaiLieuSangKien::class, 'sang_kien_id');
     }
+
     public function trangThaiSangKien(): BelongsTo
     {
         return $this->belongsTo(TrangThaiSangKien::class, 'ma_trang_thai_sang_kien', 'id');
     }
+
     public function loaiSangKien()
     {
         return $this->belongsTo(LoaiSangKien::class, 'ma_loai_sang_kien', 'id');
     }
+
     public function hoiDongThamDinh(): BelongsTo
     {
         return $this->belongsTo(HoiDongThamDinh::class, 'ma_hoi_dong');
+    }
+
+    // Quan hệ với ThanhVienHoiDong qua bảng trung gian
+    public function thanhVienHoiDongs()
+    {
+        return $this->belongsToMany(ThanhVienHoiDong::class, 'sang_kien_thanh_vien_hoi_dong', 'ma_sang_kien', 'ma_thanh_vien')
+                    ->withPivot('da_duyet')
+                    ->withTimestamps();
     }
 }
