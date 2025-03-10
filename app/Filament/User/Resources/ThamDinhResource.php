@@ -84,7 +84,6 @@ class ThamDinhResource extends Resource
                         // Lấy số lượng thành viên đã phê duyệt cho sáng kiến cụ thể này
                         $approvedCount = $record->thanhVienHoiDongs()
                             ->wherePivot('da_duyet', true)
-                            ->wherePivot('ma_sang_kien', $record->id) // Đảm bảo chỉ tính cho sáng kiến hiện tại
                             ->count();
 
                         // Lấy tổng số thành viên của hội đồng
@@ -141,7 +140,6 @@ class ThamDinhResource extends Resource
                             // Kiểm tra số lượng thành viên đã duyệt cho sáng kiến này
                             $approvedCount = $record->thanhVienHoiDongs()
                                 ->wherePivot('da_duyet', true)
-                                ->wherePivot('ma_sang_kien', $record->id)
                                 ->count();
                             $totalMembers = $record->hoiDongThamDinh->thanhVienHoiDongs()->count();
 
@@ -207,7 +205,6 @@ class ThamDinhResource extends Resource
                             // Kiểm tra số lượng thành viên đã từ chối cho sáng kiến này
                             $rejectedCount = $record->thanhVienHoiDongs()
                                 ->wherePivot('da_duyet', false)
-                                ->wherePivot('ma_sang_kien', $record->id)
                                 ->count();
                             $totalMembers = $record->hoiDongThamDinh->thanhVienHoiDongs()->count();
 

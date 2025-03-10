@@ -53,7 +53,6 @@ class ViewThamDinh extends ViewRecord
 
                                         $approvedCount = $record->thanhVienHoiDongs()
                                             ->wherePivot('da_duyet', true)
-                                            ->wherePivot('ma_sang_kien', $record->id)
                                             ->count();
                                         $totalMembers = $record->hoiDongThamDinh->thanhVienHoiDongs()->count();
 
@@ -261,7 +260,6 @@ class ViewThamDinh extends ViewRecord
                                     ->formatStateUsing(function ($record) {
                                         $approvedCount = $record->thanhVienHoiDongs()
                                             ->wherePivot('da_duyet', true)
-                                            ->wherePivot('ma_sang_kien', $record->id)
                                             ->count();
                                         $totalMembers = $record->hoiDongThamDinh->thanhVienHoiDongs()->count();
 
@@ -288,7 +286,6 @@ class ViewThamDinh extends ViewRecord
                                             ->formatStateUsing(function ($record) {
                                                 $approvedMembers = $record->thanhVienHoiDongs()
                                                     ->wherePivot('da_duyet', true)
-                                                    ->wherePivot('ma_sang_kien', $record->id)
                                                     ->with(['user', 'user.donVis'])
                                                     ->get();
 
@@ -319,14 +316,21 @@ class ViewThamDinh extends ViewRecord
                                         TextEntry::make('hoiDongThamDinh.thanhVienHoiDongs')
                                             ->label('Chưa phê duyệt')
                                             ->formatStateUsing(function ($record) {
-                                                $pendingMembers = $record->thanhVienHoiDongs()
-                                                    ->wherePivot('ma_sang_kien', $record->id)
-                                                    ->where(function ($query) {
-                                                        $query->whereNull('pivot_da_duyet')
-                                                              ->orWhere('pivot_da_duyet', 0);
-                                                    })
+                                                if (!$record->hoiDongThamDinh) {
+                                                    return '<div class="text-gray-500 dark:text-gray-400 italic">Chưa có hội đồng thẩm định</div>';
+                                                }
+
+                                                $allMembers = $record->hoiDongThamDinh->thanhVienHoiDongs()
                                                     ->with(['user', 'user.donVis'])
                                                     ->get();
+
+                                                $pendingMembers = $allMembers->filter(function ($member) use ($record) {
+                                                    $approval = $record->thanhVienHoiDongs()
+                                                        ->where('thanh_vien_hoi_dong.id', $member->id)
+                                                        ->first();
+
+                                                    return !$approval || $approval->pivot->da_duyet === null || $approval->pivot->da_duyet === false;
+                                                });
 
                                                 if ($pendingMembers->isEmpty()) {
                                                     return '<div class="text-gray-500 dark:text-gray-400 italic">Không có thành viên nào chờ duyệt</div>';
